@@ -1,604 +1,1017 @@
-<title>Madruga Reservas</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap">
-<style>
-  :root{
-    --bg:#F4F2EC;
-    --surface:#FFFFFF;
-    --surface-2:#ECE9DE;
-    --ink:#1C1B17;
-    --muted:#736D5E;
-    --border:#DEDACB;
-    --border-soft:#E8E5D9;
-    --fill:#1C1B17;
-    --fill-ink:#F4F2EC;
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>Madruga Reservas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#fff;
+      --surface:#fff;
+      --soft:#f7f7f5;
+      --line:#e8e8e4;
+      --ink:#151515;
+      --muted:#75756f;
+      --green:#1f7a4f;
+      --green-bg:#eef8f2;
+      --amber:#9a6709;
+      --amber-bg:#fff7e6;
+      --red:#b3463b;
+      --red-bg:#fff0ee;
+      --blue:#315efb;
+      --shadow:0 18px 55px rgba(0,0,0,.07);
+      --radius:20px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    a{color:inherit}
+    .wrap{max-width:1200px;margin:0 auto;padding:18px 18px 64px}
 
-    --free:#1E7A4C;      --free-bg:#E3F3E9;
-    --pending:#9C6A0A;   --pending-bg:#FBF0D9;
-    --occupied:#B23B2E;  --occupied-bg:#FBE8E4;
-    --cancelled:#8A8577; --cancelled-bg:#EFEDE4;
+    .top{
+      display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;
+      padding:6px 0 20px;border-bottom:1px solid var(--line)
+    }
+    .brand{display:flex;align-items:center;gap:10px}
+    .mark{width:38px;height:38px;border-radius:12px;background:#111;color:#fff;display:grid;place-items:center;font-weight:700}
+    .brand strong{font-size:.96rem}
+    .contact{
+      display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;
+      color:var(--muted);font-size:.75rem
+    }
+    .contact a{text-decoration:none}
+    .contact .sep{color:#c7c7c2}
 
-    --shadow: 0 1px 2px rgba(20,18,10,0.06), 0 14px 30px rgba(20,18,10,0.09);
-  }
-  *{box-sizing:border-box;}
-  body{ margin:0; background:var(--bg); color:var(--ink); font-family:"Manrope", Arial, sans-serif; padding: 30px 20px 60px; }
-  h1,h2,h3{ font-family:"Manrope", sans-serif; font-weight:800; text-wrap:balance; margin:0; letter-spacing:-0.01em; }
-  .mono{ font-family:"IBM Plex Mono", "Courier New", monospace; font-variant-numeric:tabular-nums; }
+    .hero{text-align:center;max-width:720px;margin:34px auto 22px}
+    .eyebrow{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+    .hero h1{margin:0;font-size:clamp(2rem,5vw,3.7rem);line-height:1.02;letter-spacing:-.045em}
+    .hero p{margin:13px auto 0;color:var(--muted);line-height:1.6;font-size:clamp(.92rem,2vw,1.02rem);max-width:620px}
 
-  .shell{ max-width: 1180px; margin: 0 auto; }
-  .intro{ max-width: 720px; margin: 0 auto 22px; text-align:center; }
-  .eyebrow{ font-family:"IBM Plex Mono", monospace; font-size:0.7rem; letter-spacing:0.16em; text-transform:uppercase; color: var(--muted); margin-bottom: 10px; display:block; }
-  .intro h1{ font-size: clamp(1.5rem, 3.2vw, 2.1rem); color: var(--ink); }
-  .intro p{ color: var(--muted); font-size:0.95rem; line-height:1.6; margin-top:10px; }
+    .switcher{display:flex;width:max-content;max-width:100%;margin:26px auto 22px;border:1px solid var(--line);background:var(--soft);padding:5px;border-radius:14px}
+    .switcher button{border:0;background:transparent;color:var(--muted);padding:10px 17px;border-radius:10px;font-size:.84rem;font-weight:700}
+    .switcher button.active{background:#111;color:#fff}
+    .view{display:none}
+    .view.active{display:block}
 
-  .flow{ max-width: 980px; margin: 0 auto 34px; display:grid; grid-template-columns:repeat(4,1fr); gap:0; }
-  .flow-step{ position:relative; padding: 0 14px; text-align:center; }
-  .flow-step .num{ width:26px; height:26px; border-radius:50%; background:var(--surface); border:1px solid var(--border); color:var(--ink); font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:0.78rem; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; position:relative; z-index:1; }
-  .flow-step::before{ content:""; position:absolute; top:13px; left:-50%; width:100%; height:1px; background:var(--border); z-index:0; }
-  .flow-step:first-child::before{ display:none; }
-  .flow-step h3{ font-size:0.8rem; font-weight:700; }
-  .flow-step p{ font-size:0.72rem; color:var(--muted); margin-top:4px; line-height:1.4; }
-  @media (max-width:720px){ .flow{ grid-template-columns:1fr 1fr; row-gap:22px; } .flow-step:nth-child(3)::before{ display:none; } }
+    .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
 
-  .tabs{ display:flex; gap:6px; justify-content:center; margin: 0 auto 30px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:5px; max-width: fit-content; }
-  .tabs button{ font-family:"Manrope", sans-serif; font-weight:700; font-size:0.84rem; color:var(--muted); background:transparent; border:none; border-radius:8px; padding:9px 18px; cursor:pointer; }
-  .tabs button:hover{ color:var(--ink); }
-  .tabs button.on{ background:var(--fill); color:var(--fill-ink); }
-  .tabs button:focus-visible{ outline:2px solid var(--pending); outline-offset:2px; }
+    /* CLIENT */
+    .client-wrap{max-width:560px;margin:0 auto}
+    .booking{overflow:hidden}
+    .booking-head{padding:22px 22px 18px;border-bottom:1px solid var(--line)}
+    .booking-head small{color:var(--muted);font-size:.72rem;font-weight:600}
+    .booking-head h2{margin:7px 0 0;font-size:1.5rem;letter-spacing:-.03em}
+    .booking-body{padding:20px}
+    .field{margin-bottom:15px}
+    .field label{display:block;font-size:.75rem;font-weight:700;margin-bottom:7px}
+    .field input,.field select,.field textarea{width:100%;border:1px solid var(--line);background:var(--soft);border-radius:11px;padding:12px 13px;outline:none;color:var(--ink)}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:#aaa;background:#fff}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 
-  .view{ display:none; }
-  .view.on{ display:block; animation: fade .2s ease; }
-  @keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
-  @media (prefers-reduced-motion: reduce){ .view.on{ animation:none; } }
+    .calendar{border:1px solid var(--line);border-radius:14px;background:var(--soft);padding:12px}
+    .cal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+    .cal-head button{width:32px;height:32px;border:1px solid var(--line);background:#fff;border-radius:9px}
+    .cal-title{font-weight:700;font-size:.82rem;text-transform:capitalize}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+    .dow{font-size:.61rem;color:var(--muted);text-align:center;padding:3px 0 5px}
+    .day{aspect-ratio:1;border:0;background:transparent;border-radius:8px;font-size:.74rem}
+    .day:hover:not(:disabled){background:#fff}
+    .day:disabled{color:#c8c8c2;cursor:not-allowed}
+    .day.empty{visibility:hidden}
+    .day.selected{background:#111;color:#fff;font-weight:700}
+    .day.today{box-shadow:inset 0 0 0 1px #aaa}
+    .picked-date{font-size:.69rem;color:var(--muted);margin-top:8px}
+    .picked-date b{color:var(--ink)}
 
-  /* ==================== CLIENTE ==================== */
-  .cliente-cols{ display:flex; gap:26px; justify-content:center; flex-wrap:wrap; align-items:flex-start; }
-  .phone{ width: 380px; max-width:100%; background:var(--surface); border-radius: 30px; border:1px solid var(--border); box-shadow: var(--shadow); overflow:hidden; }
-  .phone-notch{ height:24px; display:flex; align-items:center; justify-content:center; }
-  .phone-notch::after{ content:""; width:84px; height:5px; border-radius:4px; background:var(--border); }
+    .stepper{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);background:var(--soft);border-radius:11px;padding:6px 7px 6px 12px}
+    .stepper strong{font-size:.9rem}
+    .step-actions{display:flex;gap:6px}
+    .step-actions button{width:34px;height:34px;border:1px solid var(--line);background:#fff;border-radius:9px}
+    .zones{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .zones button{border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:10px;padding:10px 8px;font-size:.76rem;font-weight:700}
+    .zones button.active{background:#111;color:#fff;border-color:#111}
+    .cta{width:100%;border:0;background:#111;color:#fff;border-radius:12px;padding:14px 16px;font-weight:700}
+    .hint{text-align:center;color:var(--muted);font-size:.68rem;line-height:1.45;margin:9px 0 0}
 
-  .ph-hero{ padding: 20px 24px 24px; border-bottom:1px solid var(--border); }
-  .ph-hero .tag{ font-family:"IBM Plex Mono", monospace; font-size:0.66rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); }
-  .ph-hero h2{ font-size:1.35rem; margin-top:8px; }
-  .ph-hero .meta{ margin-top:10px; font-size:0.8rem; color:var(--muted); line-height:1.6; }
-  .ph-hero .meta b{ color:var(--ink); font-weight:700; }
+    .success{display:none;padding:22px}
+    .success.active{display:block}
+    .success.confirmed{background:var(--green-bg)}
+    .success.confirmed .success-icon{background:#dff2e7;color:var(--green)}
+    .success.confirmed h3{color:var(--green)}
+    .success-icon{width:44px;height:44px;border-radius:13px;background:var(--amber-bg);color:var(--amber);display:grid;place-items:center;font-weight:700;margin-bottom:14px}
+    .success h3{margin:0;font-size:1.18rem}
+    .success p{color:var(--muted);font-size:.81rem;line-height:1.55}
+    .summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;border:1px solid var(--line);background:var(--soft);padding:13px;border-radius:12px;margin-top:14px}
+    .summary span{display:block;color:var(--muted);font-size:.63rem;text-transform:uppercase}
+    .summary b{display:block;margin-top:3px;font-size:.79rem}
+    .wa-link{display:flex;justify-content:center;text-decoration:none;margin-top:14px;background:#111;color:#fff;border-radius:11px;padding:13px;font-weight:700;font-size:.83rem}
 
-  .ph-body{ padding: 20px 22px 26px; }
-  .field{ margin-bottom:16px; }
-  .field label{ display:block; font-size:0.76rem; font-weight:700; color:var(--muted); margin-bottom:6px; }
-  .field input, .field select, .field textarea{ width:100%; font-family:"Manrope", sans-serif; font-size:0.9rem; color:var(--ink); background:var(--surface-2); border:1px solid var(--border); border-radius:9px; padding:10px 12px; }
-  .field textarea{ resize:vertical; min-height:50px; }
+    /* OWNER */
+    .owner-shell{max-width:1140px;margin:0 auto}
+    .owner-toolbar{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:end;margin-bottom:14px}
+    .owner-toolbar h2{margin:0;font-size:1.45rem;letter-spacing:-.03em}
+    .owner-toolbar p{margin:5px 0 0;color:var(--muted);font-size:.77rem}
+    .control label{display:block;color:var(--muted);font-size:.66rem;font-weight:700;margin-bottom:5px}
+    .control select{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 11px;font-weight:700;font-size:.8rem}
+    .owner-date-wrap{position:relative}
+    .date-trigger{
+      min-width:170px;border:1px solid var(--line);background:#fff;border-radius:10px;
+      padding:9px 11px;font-weight:700;font-size:.8rem;text-align:left
+    }
+    .owner-cal-pop{
+      position:absolute;right:0;top:calc(100% + 7px);z-index:20;width:300px;
+      background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;
+      box-shadow:0 18px 45px rgba(0,0,0,.12);display:none
+    }
+    .owner-cal-pop.active{display:block}
+    .owner-cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+    .owner-cal-head button{width:30px;height:30px;border:1px solid var(--line);background:#fff;border-radius:8px}
+    .owner-cal-title{font-size:.78rem;font-weight:700;text-transform:capitalize}
+    .owner-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 
-  .calendar{ border:1px solid var(--border); border-radius:11px; padding:12px; background:var(--surface-2); }
-  .cal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
-  .cal-head button{ width:28px; height:28px; border-radius:7px; border:1px solid var(--border); background:var(--surface); color:var(--ink); cursor:pointer; font-size:0.9rem; line-height:1; }
-  .cal-head button:disabled{ opacity:0.3; cursor:not-allowed; }
-  .cal-head span{ font-family:"IBM Plex Mono",monospace; font-size:0.78rem; font-weight:600; text-transform:capitalize; }
-  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
-  .cal-dow{ font-size:0.62rem; color:var(--muted); text-align:center; text-transform:uppercase; padding-bottom:4px; }
-  .cal-day{ aspect-ratio:1; border:none; background:transparent; color:var(--ink); font-family:"IBM Plex Mono",monospace; font-size:0.78rem; border-radius:8px; cursor:pointer; }
-  .cal-day:disabled{ color:var(--border); cursor:not-allowed; }
-  .cal-day.empty{ visibility:hidden; cursor:default; }
-  .cal-day.today{ box-shadow: inset 0 0 0 1px var(--muted); }
-  .cal-day.picked{ background:var(--fill); color:var(--fill-ink); font-weight:700; box-shadow:none; }
-  .cal-picked-label{ margin:10px 2px 0; font-size:0.74rem; color:var(--muted); }
-  .cal-picked-label b{ color:var(--ink); }
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+    .stat{border:1px solid var(--line);background:var(--soft);border-radius:11px;padding:10px}
+    .stat span{display:block;color:var(--muted);font-size:.61rem;text-transform:uppercase}
+    .stat b{display:block;margin-top:3px;font-size:1rem}
 
-  .stepper{ display:flex; align-items:center; justify-content:space-between; background:var(--surface-2); border:1px solid var(--border); border-radius:9px; padding:6px 6px 6px 14px; }
-  .stepper .count{ font-family:"IBM Plex Mono", monospace; font-weight:600; font-size:1rem; min-width:60px; text-align:center; }
-  .stepper button{ width:30px; height:30px; border-radius:7px; border:1px solid var(--border); background:var(--surface); color:var(--ink); font-size:1.05rem; cursor:pointer; }
+    .owner-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(320px,.7fr);gap:18px}
+    .floor-card,.queue-card{padding:16px}
+    .section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px}
+    .section-head h3{margin:0;font-size:.88rem}
+    .section-head small{color:var(--muted);font-size:.65rem}
+    .legend{display:flex;gap:9px;flex-wrap:wrap}
+    .legend span{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:.65rem}
+    .dot{width:8px;height:8px;border-radius:50%}
+    .dot.free{background:var(--green)}
+    .dot.busy{background:var(--red)}
+    .dot.selected{background:var(--amber)}
 
-  .zone-pick{ display:flex; gap:8px; }
-  .zone-pick button{ flex:1; padding:9px 8px; border-radius:9px; border:1px solid var(--border); background:var(--surface-2); color:var(--muted); font-family:"Manrope", sans-serif; font-weight:700; font-size:0.8rem; cursor:pointer; }
-  .zone-pick button.picked{ background:var(--fill); border-color:var(--fill); color:var(--fill-ink); }
+    .floor{
+      position:relative;border:1px solid var(--line);border-radius:16px;
+      background:linear-gradient(#fafaf8,#f7f7f5);padding:34px 18px 18px;
+      display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;
+      align-items:center
+    }
+    .floor::before{content:"SALÓN";position:absolute;top:10px;left:13px;color:#b0b0aa;font-size:.61rem;letter-spacing:.12em;font-weight:700}
+    .table{
+      align-self:center;justify-self:center;width:100%;max-width:150px;min-height:112px;
+      border:1px solid var(--line);border-radius:14px;background:#fff;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px;
+      transition:.15s ease
+    }
+    .table:hover:not(:disabled){transform:translateY(-2px)}
+    .table .name{font-size:.75rem;font-weight:800}
+    .table .cap{font-size:.64rem;color:var(--muted)}
+    .table .state{font-size:.61rem;font-weight:700}
+    .table.free{background:var(--green-bg);border-color:#bfe1cd}
+    .table.free .state{color:var(--green)}
+    .table.busy{background:var(--red-bg);border-color:#edc1bb}
+    .table.busy .state{color:var(--red)}
+    .table.pending{background:var(--amber-bg);border-color:#efd8aa}
+    .table.pending .state{color:var(--amber)}
+    .table.selected{background:var(--amber-bg);border-color:#efd8aa;outline:2px solid #111;outline-offset:2px}
+    .table.selected .state{color:var(--amber)}
+    .table.unavailable{opacity:.24;filter:grayscale(.4);cursor:not-allowed}
 
-  .field-error{ font-size:0.74rem; color:var(--occupied); margin-top:-8px; margin-bottom:14px; display:none; }
-  .field-error.on{ display:block; }
+    .quick-panel{
+      display:none;position:relative;margin-top:12px;border:1px solid var(--line);
+      border-radius:13px;padding:14px 44px 14px 14px;background:#fff
+    }
+    .quick-panel.active{display:block}
+    .quick-close{
+      position:absolute;top:9px;right:9px;width:28px;height:28px;border:0;background:var(--soft);
+      border-radius:8px;font-size:1rem;line-height:1;color:var(--muted)
+    }
+    .quick-panel strong{font-size:.77rem}
+    .quick-panel p{margin:4px 0 9px;color:var(--muted);font-size:.68rem;line-height:1.45}
+    .quick-actions{display:flex;gap:7px}
+    .quick-actions button{flex:1;border:1px solid var(--line);background:#fff;border-radius:9px;padding:9px;font-size:.68rem;font-weight:700}
+    .quick-actions .danger{background:#111;color:#fff;border-color:#111}
 
-  .cta{ width:100%; margin-top:6px; background:var(--fill); color:var(--fill-ink); border:none; border-radius:11px; padding:13px; font-family:"Manrope", sans-serif; font-weight:800; font-size:0.92rem; cursor:pointer; }
-  .cta:disabled{ opacity:0.35; cursor:not-allowed; }
-  .hint{ text-align:center; font-size:0.7rem; color:var(--muted); margin-top:10px; }
+    .queue{display:flex;flex-direction:column;gap:9px}
+    .res{border:1px solid var(--line);border-radius:13px;padding:11px;background:#fff}
+    .res-top{display:flex;justify-content:space-between;gap:10px;align-items:start}
+    .res h4{margin:0;font-size:.81rem}
+    .res p{margin:4px 0 0;color:var(--muted);font-size:.69rem;line-height:1.4}
+    .pill{padding:5px 8px;border-radius:999px;font-size:.6rem;font-weight:700;white-space:nowrap}
+    .pill.pending{background:var(--amber-bg);color:var(--amber)}
+    .pill.confirmed{background:var(--green-bg);color:var(--green)}
+    .actions{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap}
+    .actions button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 9px;font-size:.66rem;font-weight:700}
+    .actions .primary{background:#111;color:#fff;border-color:#111}
+    .assign{display:none;border-top:1px solid var(--line);margin-top:9px;padding-top:10px;background:var(--soft);border-radius:10px;padding-left:10px;padding-right:10px;padding-bottom:10px}
+    .assign.active{display:block}
+    .assign-title{font-size:.67rem;color:var(--muted);margin-bottom:7px}
+    .suggestions{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+    .suggestion{border:1px solid var(--line);background:var(--soft);border-radius:9px;padding:8px;text-align:left;font-size:.66rem;font-weight:700}
+    .suggestion.active{background:#111;color:#fff;border-color:#111}
+    .confirm-row{display:flex;gap:7px;margin-top:8px}
+    .confirm-row button{flex:1;border:0;border-radius:9px;padding:9px;font-size:.68rem;font-weight:700}
+    .confirm{background:#111;color:#fff}
+    .cancel{background:var(--soft);color:var(--muted)}
+    .reminder{display:inline-flex;align-items:center;gap:5px;margin-top:7px;color:var(--blue);background:#eef2ff;border-radius:999px;padding:5px 8px;font-size:.59rem;font-weight:700}
+    .wa-note{display:none;margin-top:8px;border:1px solid #cce6d6;background:var(--green-bg);color:#2f5d42;border-radius:9px;padding:8px;font-size:.65rem;line-height:1.4}
+    .wa-note.active{display:block}
 
-  .ticket{ display:none; padding: 20px 22px 26px; }
-  .ticket.on{ display:block; }
-  .ph-body.hidden{ display:none; }
-  .stub{ border:1px dashed var(--border); border-radius:14px; padding:18px; background:var(--surface-2); }
-  .stub .num{ font-family:"IBM Plex Mono", monospace; font-size:0.7rem; color:var(--muted); letter-spacing:0.08em; }
-  .stub h3{ font-size:1.1rem; margin-top:4px; }
-  .stub .grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px; }
-  .stub .grid div span{ display:block; font-size:0.66rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; }
-  .stub .grid div b{ font-family:"IBM Plex Mono", monospace; font-size:0.95rem; }
-  .status-pill{ display:inline-flex; align-items:center; gap:6px; margin-top:16px; font-size:0.78rem; font-weight:700; color: var(--pending); background:var(--pending-bg); padding:6px 12px; border-radius:99px; }
-  .status-pill .dot{ width:6px; height:6px; border-radius:50%; background:var(--pending); }
-  .step-caption{ text-align:center; font-size:0.74rem; color:var(--muted); margin-bottom:10px; max-width:380px; }
-  .step-caption b{ color:var(--ink); }
+    @media (max-width:920px){
+      .owner-grid{grid-template-columns:1fr}
+      .owner-toolbar{grid-template-columns:1fr 1fr}
+      .owner-toolbar>div:first-child{grid-column:1/-1}
+    }
+    @media (max-width:620px){
+      .wrap{padding:12px 10px 42px}
+      .hero{margin-top:25px}
+      .hero h1{font-size:2.18rem}
+      .switcher{width:100%}
+      .switcher button{flex:1}
+      .row2{grid-template-columns:1fr}
+      .zones{grid-template-columns:1fr}
+      .summary{grid-template-columns:1fr}
+      .owner-toolbar{grid-template-columns:1fr}
+      .owner-toolbar>div:first-child{grid-column:auto}
+      .control select,.date-trigger{width:100%}
+      .owner-cal-pop{left:0;right:auto;width:min(300px,calc(100vw - 40px))}
+      .stats{grid-template-columns:1fr}
+      .floor{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:30px 8px 10px}
+      .table{min-height:88px;max-width:none;padding:6px;border-radius:11px}
+      .table .name{font-size:.68rem}
+      .table .cap,.table .state{font-size:.57rem}
+      .contact{font-size:.68rem}
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><div class="mark">M</div><strong>Madruga con Sabor a Perú</strong></div>
+    <div class="contact">
+      <a href="https://www.google.com/maps/search/?api=1&query=C.%20de%20Jacinto%20Verdaguer%2C%206%2C%2028019%20Madrid" target="_blank">C. de Jacinto Verdaguer, 6 · Madrid</a>
+      <span class="sep">·</span>
+      <a href="https://wa.me/34692209204" target="_blank">WhatsApp 692 209 204</a>
+    </div>
+  </header>
 
-  .wa-mock{ width:340px; max-width:100%; border-radius:16px; overflow:hidden; border:1px solid var(--border); box-shadow:var(--shadow); background:var(--surface); }
-  .wa-head{ background:var(--surface-2); color:var(--ink); padding:12px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); }
-  .wa-avatar{ width:32px; height:32px; border-radius:50%; background:var(--pending); color:#FFFBF0; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.8rem; flex-shrink:0; }
-  .wa-head div b{ display:block; font-size:0.86rem; }
-  .wa-head div span{ display:block; font-size:0.68rem; color:var(--muted); }
-  .wa-chat{ padding:16px; min-height: 120px; display:flex; flex-direction:column; gap:10px; background:var(--bg); }
-  .wa-bubble{ max-width:88%; border-radius:11px; padding:9px 12px; font-size:0.8rem; line-height:1.5; white-space:pre-line; }
-  .wa-bubble.out{ background:var(--free-bg); color:var(--ink); align-self:flex-end; border:1px solid var(--free); border-top-right-radius:3px; }
+  <section class="hero">
+    <div class="eyebrow">Reserva fácil</div>
+    <h1>Reserva, confirma y listo.</h1>
+    <p>El cliente elige cuándo venir y envía la solicitud por WhatsApp. El restaurante la recibe, asigna una mesa y confirma desde un panel.</p>
+  </section>
 
-  /* ==================== PANEL RESTAURANTE ==================== */
-  .panel{ background:var(--surface); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow); padding: 20px 20px 24px; }
-  .panel-head{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:18px; }
-  .panel-head h2{ font-size:1.15rem; }
-
-  .day-strip{ display:flex; gap:6px; overflow-x:auto; padding-bottom:2px; margin-bottom:18px; }
-  .day-pill{ flex-shrink:0; border:1px solid var(--border); background:var(--surface-2); color:var(--muted); border-radius:10px; padding:8px 14px; text-align:center; cursor:pointer; font-family:"IBM Plex Mono",monospace; }
-  .day-pill .d{ font-size:0.66rem; text-transform:uppercase; letter-spacing:0.05em; display:block; }
-  .day-pill .n{ font-size:1rem; font-weight:600; display:block; margin-top:2px; }
-  .day-pill.on{ background:var(--fill); border-color:var(--fill); color:var(--fill-ink); }
-
-  .stats{ display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:10px; margin-bottom:22px; }
-  .stat{ border:1px solid var(--border); border-radius:12px; padding:12px 14px; background:var(--surface-2); }
-  .stat span{ font-size:0.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; }
-  .stat b{ display:block; font-family:"IBM Plex Mono", monospace; font-size:1.35rem; margin-top:4px; }
-  .stat.accented b{ color:var(--free); }
-
-  .section-title{ font-size:0.74rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); margin-bottom:10px; }
-
-  /* agenda estilo calendario: hora a la izquierda, reservas a la derecha */
-  .agenda{ border-top:1px solid var(--border-soft); }
-  .agenda-row{ display:flex; gap:14px; padding:12px 0; border-bottom:1px solid var(--border-soft); }
-  .agenda-hour{ width:52px; flex-shrink:0; font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:0.85rem; color:var(--muted); padding-top:2px; }
-  .agenda-items{ flex:1; display:flex; flex-direction:column; gap:8px; min-width:0; }
-  .agenda-empty{ font-size:0.78rem; color:var(--muted); opacity:0.7; padding-top:2px; }
-
-  .res-card{ border:1px solid var(--border); border-radius:11px; padding:10px 12px; background:var(--surface-2); }
-  .res-top{ display:flex; align-items:center; gap:10px; }
-  .res-top b{ font-size:0.88rem; flex:1; min-width:0; }
-  .res-meta{ font-size:0.74rem; color:var(--muted); display:block; margin-top:1px; margin-bottom:2px; }
-  .chip{ font-size:0.68rem; font-weight:700; padding:4px 9px; border-radius:99px; white-space:nowrap; }
-  .chip.pending{ color:var(--pending); background:var(--pending-bg); }
-  .chip.confirmed{ color:var(--free); background:var(--free-bg); }
-  .chip.cancelled{ color:var(--cancelled); background:var(--cancelled-bg); }
-  .reminder-tag{ font-size:0.66rem; color:var(--pending); margin-top:6px; display:inline-flex; align-items:center; gap:4px; }
-
-  .res-actions{ display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
-  .res-btn{ border:1px solid var(--border); background:var(--surface); color:var(--ink); font-size:0.72rem; font-weight:700; padding:6px 10px; border-radius:8px; cursor:pointer; }
-  .res-btn.ghost{ color:var(--muted); background:transparent; border-color:transparent; text-decoration:underline; }
-
-  .assign-box{ display:none; margin-top:10px; padding-top:10px; border-top:1px dashed var(--border); }
-  .assign-box.on{ display:block; }
-  .assign-box .lbl{ font-size:0.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:8px; }
-
-  .table-options{ display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
-  .table-option{ display:flex; align-items:center; justify-content:space-between; border:1px solid var(--border); background:var(--surface); color:var(--ink); border-radius:9px; padding:9px 12px; font-family:"Manrope",sans-serif; font-weight:700; font-size:0.82rem; cursor:pointer; text-align:left; }
-  .table-option .cap{ font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:0.74rem; color:var(--muted); }
-  .table-option.picked{ border-color:var(--fill); background:var(--surface-2); }
-  .table-option.picked .cap{ color:var(--ink); }
-
-  .no-mesa{ border:1px dashed var(--border); border-radius:10px; padding:12px; }
-  .no-mesa p{ margin:0 0 10px; font-size:0.82rem; color:var(--ink); line-height:1.5; }
-  .no-mesa-actions button{ background:var(--surface); border:1px solid var(--border); color:var(--ink); font-size:0.76rem; font-weight:700; padding:8px 12px; border-radius:8px; cursor:pointer; }
-
-  .confirm-btn{ background:var(--fill); color:var(--fill-ink); border:none; border-radius:8px; padding:8px 14px; font-family:"Manrope",sans-serif; font-weight:700; font-size:0.78rem; cursor:pointer; }
-  .confirm-btn:disabled{ opacity:0.35; cursor:not-allowed; }
-  .sent-note{ display:none; margin-top:10px; }
-  .sent-note.on{ display:block; }
-</style>
-
-<div class="shell">
-  <div class="intro">
-    <span class="eyebrow">Boceto de producto · reservas por QR</span>
-    <h1>Madruga con Sabor a Perú</h1>
-    <p>El cliente solo ve un formulario de reserva. El dueño ve un calendario del día: a qué hora es cada reserva, qué mesa le queda y un toque para confirmar — nada más.</p>
+  <div class="switcher">
+    <button class="active" data-view="client">Cliente</button>
+    <button data-view="owner">Dueño</button>
   </div>
 
-  <div class="flow">
-    <div class="flow-step"><div class="num">1</div><h3>Cliente reserva</h3><p>Escanea el QR y rellena nombre, día, hora y comensales.</p></div>
-    <div class="flow-step"><div class="num">2</div><h3>Llega por WhatsApp</h3><p>Su WhatsApp se abre con el mensaje listo para enviar al local.</p></div>
-    <div class="flow-step"><div class="num">3</div><h3>El dueño asigna mesa</h3><p>Solo ve mesas libres con sitio suficiente, a esa hora.</p></div>
-    <div class="flow-step"><div class="num">4</div><h3>Confirma y avisa</h3><p>Un toque, y al cliente le llega la reserva confirmada por WhatsApp.</p></div>
-  </div>
-
-  <div class="tabs" role="tablist">
-    <button class="on" data-view="cliente">Vista del cliente</button>
-    <button data-view="panel">Panel del dueño</button>
-  </div>
-
-  <!-- ===================== CLIENTE ===================== -->
-  <section class="view on" id="view-cliente">
-    <div class="cliente-cols">
-      <div>
-        <p class="step-caption"><b>Paso 1–2 ·</b> el cliente rellena esto y su WhatsApp se abre listo para enviar.</p>
-        <div class="phone">
-          <div class="phone-notch"></div>
-          <div class="ph-hero">
-            <span class="tag">Madruga con Sabor a Perú · C. Bravo Murillo, Madrid</span>
-            <h2>Reservar mesa</h2>
-            <div class="meta">Abierto <b>todos los días</b>, de <b>11:00 a 23:00</b></div>
+  <!-- CLIENTE -->
+  <section class="view active" id="view-client">
+    <div class="client-wrap">
+      <div class="card booking">
+        <div id="bookingForm">
+          <div class="booking-head">
+            <small>Reserva online</small>
+            <h2>Reserva tu mesa</h2>
           </div>
-          <div class="ph-body" id="formBody">
+          <div class="booking-body">
             <div class="field">
-              <label for="f-nombre">Nombre y apellidos</label>
-              <input id="f-nombre" type="text" value="Renzo Aguilar" />
+              <label for="name">Nombre y apellidos</label>
+              <input id="name" type="text" value="Renzo Aguilar">
             </div>
+
             <div class="field">
-              <label>Día</label>
-              <div class="calendar" id="calendar">
+              <label for="phone">Número de teléfono</label>
+              <input id="phone" type="tel" inputmode="tel" value="622 883 015" placeholder="Ej. 622 883 015">
+            </div>
+
+            <div class="field">
+              <label>Fecha</label>
+              <div class="calendar">
                 <div class="cal-head">
-                  <button type="button" id="calPrev" aria-label="Mes anterior">‹</button>
-                  <span id="calMonthLabel"></span>
-                  <button type="button" id="calNext" aria-label="Mes siguiente">›</button>
+                  <button id="prevMonth" type="button">‹</button>
+                  <div id="calTitle" class="cal-title"></div>
+                  <button id="nextMonth" type="button">›</button>
                 </div>
                 <div class="cal-grid" id="calGrid"></div>
+                <div id="pickedDate" class="picked-date"></div>
               </div>
-              <p class="cal-picked-label" id="calPickedLabel"></p>
             </div>
-            <div class="field">
-              <label for="f-hora">Hora</label>
-              <select id="f-hora"></select>
-            </div>
-            <div class="field-error" id="errorHora">Esa hora ya pasó por hoy — elige una más tarde.</div>
-            <div class="field">
-              <label>Comensales</label>
-              <div class="stepper">
-                <span class="count mono" id="pax">4</span>
-                <div style="display:flex; gap:6px;">
-                  <button type="button" aria-label="Menos comensales" onclick="cambiarPax(-1)">−</button>
-                  <button type="button" aria-label="Más comensales" onclick="cambiarPax(1)">+</button>
+
+            <div class="row2">
+              <div class="field">
+                <label for="time">Hora</label>
+                <select id="time"></select>
+              </div>
+              <div class="field">
+                <label>Comensales</label>
+                <div class="stepper">
+                  <strong><span id="pax">3</span> personas</strong>
+                  <div class="step-actions">
+                    <button id="minus" type="button">−</button>
+                    <button id="plus" type="button">+</button>
+                  </div>
                 </div>
               </div>
             </div>
+
             <div class="field">
-              <label>Zona preferida</label>
-              <div class="zone-pick">
-                <button type="button" class="picked" onclick="elegirZona(this)">Salón</button>
-                <button type="button" onclick="elegirZona(this)">Terraza</button>
-                <button type="button" onclick="elegirZona(this)">Da igual</button>
-              </div>
+              <label for="note">Observaciones <span style="font-weight:500;color:var(--muted)">(opcional)</span></label>
+              <textarea id="note" rows="3" placeholder="Alergias, silla para bebé, celebración…"></textarea>
             </div>
-            <div class="field">
-              <label for="f-nota">Algo que debamos saber (opcional)</label>
-              <textarea id="f-nota" placeholder="Alergias, silla para bebé, celebración…"></textarea>
-            </div>
-            <button class="cta" id="ctaReservar" onclick="confirmarReserva()">Reservar por WhatsApp →</button>
-            <p class="hint">Se abre tu WhatsApp con estos datos ya escritos, listos para enviar al local.</p>
-          </div>
-          <div class="ticket" id="ticketBody">
-            <div class="stub">
-              <span class="num">RESERVA #0057</span>
-              <h3 id="tkNombre">Renzo Aguilar</h3>
-              <div class="grid">
-                <div><span>Día</span><b id="tkFecha">—</b></div>
-                <div><span>Hora</span><b id="tkHora">—</b></div>
-                <div><span>Comensales</span><b id="tkPax">4</b></div>
-                <div><span>Zona</span><b id="tkZona">Salón</b></div>
-              </div>
-              <div class="status-pill"><span class="dot"></span> Pendiente de confirmar por WhatsApp</div>
-            </div>
+
+            <button class="cta" id="reserveBtn">Reservar por WhatsApp</button>
+            <p class="hint">La solicitud se prepara para el WhatsApp del restaurante.</p>
           </div>
         </div>
-      </div>
 
-      <div id="waClienteWrap" style="display:none;">
-        <p class="step-caption"><b>Paso 2 ·</b> esto es lo que se abre en el WhatsApp del cliente, con el local (692 209 204) como destinatario.</p>
-        <div class="wa-mock">
-          <div class="wa-head"><div class="wa-avatar">M</div><div><b>Madruga con Sabor a Perú</b><span>+34 692 209 204</span></div></div>
-          <div class="wa-chat"><div class="wa-bubble out" id="waMsgCliente"></div></div>
+        <div class="success" id="success">
+          <div class="success-icon">✓</div>
+          <h3>Solicitud lista</h3>
+          <p>El cliente solo revisa el mensaje y lo envía.</p>
+          <div class="summary">
+            <div><span>Nombre</span><b id="sumName"></b></div>
+            <div><span>Fecha</span><b id="sumDate"></b></div>
+            <div><span>Hora</span><b id="sumTime"></b></div>
+            <div><span>Personas</span><b id="sumPax"></b></div>
+            <div><span>Teléfono</span><b id="sumPhone"></b></div>
+            <div><span>Estado</span><b id="sumStatus" style="color:var(--amber)">Pendiente</b></div>
+          </div>
+          <a id="waLink" class="wa-link" target="_blank" rel="noopener">Abrir WhatsApp</a>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ===================== PANEL DUEÑO ===================== -->
-  <section class="view" id="view-panel">
-    <p class="step-caption" style="margin:0 auto 16px;"><b>Paso 3–4 ·</b> el calendario del día, con solo tocar para asignar mesa y confirmar.</p>
-    <div class="panel">
-      <div class="panel-head">
-        <h2>Calendario de hoy</h2>
+  <!-- DUEÑO -->
+  <section class="view" id="view-owner">
+    <div class="owner-shell">
+      <div class="owner-toolbar">
+        <div>
+          <h2>Reservas</h2>
+          <p>El plano se actualiza según el día y la hora seleccionados.</p>
+        </div>
+        <div class="control owner-date-wrap">
+          <label>Día</label>
+          <button type="button" class="date-trigger" id="ownerDateTrigger"><span id="ownerDateLabel"></span></button>
+          <div class="owner-cal-pop" id="ownerCalPop">
+            <div class="owner-cal-head">
+              <button type="button" id="ownerCalPrev">‹</button>
+              <div class="owner-cal-title" id="ownerCalTitle"></div>
+              <button type="button" id="ownerCalNext">›</button>
+            </div>
+            <div class="owner-cal-grid" id="ownerCalGrid"></div>
+          </div>
+        </div>
+        <div class="control">
+          <label>Hora</label>
+          <select id="ownerTime"></select>
+        </div>
       </div>
 
-      <div class="day-strip" id="dayStrip"></div>
+      <div class="owner-grid">
+        <div class="card floor-card">
+          <div class="section-head">
+            <h3>Plano del salón</h3>
+            <div class="legend">
+              <span><i class="dot free"></i>Libre</span>
+              <span><i class="dot selected"></i>Seleccionada</span>
+              <span><i class="dot busy"></i>Ocupada</span>
+            </div>
+          </div>
 
-      <div class="stats">
-        <div class="stat"><span>Reservas hoy</span><b id="statReservas">—</b></div>
-        <div class="stat"><span>Comensales hoy</span><b id="statComensales">—</b></div>
-        <div class="stat accented"><span>Mesas libres ahora</span><b id="statLibres">—</b></div>
+          <div class="floor" id="floor">
+            <button class="table" data-table="1" data-cap="2"><span class="name">Mesa 1</span><span class="cap">2 plazas</span><span class="state"></span></button>
+            <button class="table" data-table="2" data-cap="2"><span class="name">Mesa 2</span><span class="cap">2 plazas</span><span class="state"></span></button>
+            <button class="table" data-table="3" data-cap="2"><span class="name">Mesa 3</span><span class="cap">2 plazas</span><span class="state"></span></button>
+            <button class="table" data-table="4" data-cap="4"><span class="name">Mesa 4</span><span class="cap">4 plazas</span><span class="state"></span></button>
+            <button class="table" data-table="5" data-cap="4"><span class="name">Mesa 5</span><span class="cap">4 plazas</span><span class="state"></span></button>
+            <button class="table" data-table="6" data-cap="4"><span class="name">Mesa 6</span><span class="cap">4 plazas</span><span class="state"></span></button>
+            <button class="table" data-table="7" data-cap="6"><span class="name">Mesa 7</span><span class="cap">6 plazas</span><span class="state"></span></button>
+            <button class="table" data-table="8" data-cap="6"><span class="name">Mesa 8</span><span class="cap">6 plazas</span><span class="state"></span></button>
+            <button class="table" data-table="9" data-cap="8"><span class="name">Mesa 9</span><span class="cap">8 plazas</span><span class="state"></span></button>
+          </div>
+
+          <div id="quickPanel" class="quick-panel"></div>
+        </div>
+
+        <div class="card queue-card">
+          <div class="section-head">
+            <div>
+              <h3>Solicitudes</h3>
+              <small>Asignar → elegir mesa → confirmar</small>
+            </div>
+          </div>
+          <div class="queue" id="queue"></div>
+        </div>
       </div>
-
-      <div class="section-title">Agenda del día</div>
-      <div class="agenda" id="agendaBody"></div>
     </div>
   </section>
 </div>
 
 <script>
-  document.querySelectorAll('.tabs button').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      document.querySelectorAll('.tabs button').forEach(function(b){ b.classList.remove('on'); });
-      btn.classList.add('on');
-      var target = btn.getAttribute('data-view');
-      document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('on'); });
-      document.getElementById('view-' + target).classList.add('on');
+  const restaurantPhone = "34692209204";
+  const monthNames = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+  const dows = ["L","M","X","J","V","S","D"];
+
+  let pax = 3;
+    let selectedDate = new Date();
+  selectedDate.setHours(0,0,0,0);
+  let calYear = selectedDate.getFullYear();
+  let calMonth = selectedDate.getMonth();
+
+  let ownerSelectedDate = new Date();
+  ownerSelectedDate.setHours(0,0,0,0);
+  let ownerCalYear = ownerSelectedDate.getFullYear();
+  let ownerCalMonth = ownerSelectedDate.getMonth();
+
+  let selectedReservation = null;
+  let selectedTable = null;
+  let currentClientReservationId = null;
+  let manualStates = []; // {table,date,time,status:"busy"|"pending"} para clientes sin reserva / bloqueos manuales
+
+  const tables = [
+    {id:1,cap:2},{id:2,cap:2},{id:3,cap:2},
+    {id:4,cap:4},{id:5,cap:4},{id:6,cap:4},
+    {id:7,cap:6},{id:8,cap:6},{id:9,cap:8}
+  ];
+
+  function todayISO(offset=0){
+    const d=new Date(); d.setDate(d.getDate()+offset); d.setHours(12,0,0,0);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  }
+
+  const reservations = [
+    {id:1,date:todayISO(),name:"Consuelo Vidal",phone:"611 204 887",time:"12:00",pax:2,zone:"Salón",status:"confirmed",table:1},
+    {id:2,date:todayISO(),name:"Renzo Aguilar",phone:"622 883 015",time:"13:00",pax:4,zone:"Salón",status:"pending",table:null}
+  ];
+
+  function isoFromDate(d){
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  }
+
+  function openHourForDate(date){
+    const day=date.getDay();
+    if(day===1) return null;
+    if(day===0 || day===6) return 8.5;
+    return 12;
+  }
+
+  function closingHourForDate(date){
+    return date.getDay()===1 ? null : 23;
+  }
+
+  function buildReservationTimes(){
+    const s=document.getElementById("time");
+    const reserveBtn=document.getElementById("reserveBtn");
+    s.innerHTML="";
+    const open=openHourForDate(selectedDate);
+    const close=closingHourForDate(selectedDate);
+
+    if(open===null){
+      const o=document.createElement("option");o.value="";o.textContent="Cerrado";
+      s.appendChild(o);s.disabled=true;reserveBtn.disabled=true;return;
+    }
+
+    const slots=[];
+    if(open===8.5) slots.push("08:30");
+    for(let h=Math.ceil(open);h<=close;h++) slots.push(`${String(h).padStart(2,"0")}:00`);
+
+    // Si reserva para hoy, no mostramos horas que ya han pasado.
+    const now=new Date();
+    const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+    const chosen=new Date(selectedDate.getFullYear(),selectedDate.getMonth(),selectedDate.getDate());
+    const isToday=+today===+chosen;
+    const available=slots.filter(t=>{
+      if(!isToday) return true;
+      const [hh,mm]=t.split(":").map(Number);
+      const slot=new Date(now.getFullYear(),now.getMonth(),now.getDate(),hh,mm,0,0);
+      return slot.getTime()>now.getTime();
     });
-  });
 
-  var pax = 4;
-  function cambiarPax(delta){ pax = Math.max(1, Math.min(12, pax + delta)); document.getElementById('pax').textContent = pax; }
-  function elegirZona(btn){ btn.parentElement.querySelectorAll('button').forEach(function(b){ b.classList.remove('picked'); }); btn.classList.add('picked'); }
+    if(!available.length){
+      const o=document.createElement("option");o.value="";o.textContent="Sin horas disponibles hoy";
+      s.appendChild(o);s.disabled=true;reserveBtn.disabled=true;return;
+    }
 
-  function ymd(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
-  function horaANum(h){ var p = h.split(':'); return parseInt(p[0],10) + parseInt(p[1],10)/60; }
+    s.disabled=false;
+    reserveBtn.disabled=false;
+    available.forEach(t=>{
+      const o=document.createElement("option");o.value=t;o.textContent=t;s.appendChild(o);
+    });
+    s.value=available.includes("13:00")?"13:00":available[0];
+  }
 
-  // ---------- hora del cliente: 11:00 a 23:00 cada 30 min ----------
-  var horaSelect = document.getElementById('f-hora');
-  var opciones = [];
-  for (var h = 11; h <= 22; h++){ opciones.push(String(h).padStart(2,'0') + ':00'); opciones.push(String(h).padStart(2,'0') + ':30'); }
-  opciones.push('23:00');
-  opciones.forEach(function(o){ var op = document.createElement('option'); op.value = o; op.textContent = o; horaSelect.appendChild(op); });
-  horaSelect.value = '13:00';
+  function buildOwnerTimes(){
+    const s=document.getElementById("ownerTime");
+    const previous=s.value;
+    s.innerHTML="";
+    const open=openHourForDate(ownerSelectedDate);
+    const close=closingHourForDate(ownerSelectedDate);
 
-  // ---------- calendario del cliente (hasta 6 meses vista) ----------
-  var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  var DOW = ['L','M','X','J','V','S','D'];
-  var ahora = new Date();
-  var hoyYMD = ymd(ahora);
-  var diaSeleccionado = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
-  var calAno = diaSeleccionado.getFullYear();
-  var calMes = diaSeleccionado.getMonth();
-  var calMax = new Date(ahora.getFullYear(), ahora.getMonth() + 6, 1);
+    if(open===null){
+      const o=document.createElement("option");o.value="";o.textContent="Cerrado";
+      s.appendChild(o);s.disabled=true;return;
+    }
 
-  function renderCalendario(){
-    var grid = document.getElementById('calGrid');
-    grid.innerHTML = '';
-    DOW.forEach(function(d){ var el = document.createElement('div'); el.className = 'cal-dow'; el.textContent = d; grid.appendChild(el); });
+    s.disabled=false;
+    const slots=[];
+    if(open===8.5) slots.push("08:30");
+    for(let h=Math.ceil(open);h<=close;h++) slots.push(`${String(h).padStart(2,"0")}:00`);
+    slots.forEach(t=>{const o=document.createElement("option");o.value=t;o.textContent=t;s.appendChild(o)});
+    s.value=slots.includes(previous)?previous:(slots.includes("13:00")?"13:00":slots[0]);
+  }
 
-    var primerDia = new Date(calAno, calMes, 1);
-    var offset = (primerDia.getDay() + 6) % 7;
-    for (var i = 0; i < offset; i++){ var vac = document.createElement('div'); vac.className = 'cal-day empty'; grid.appendChild(vac); }
+  function renderCalendar(){
+    const grid=document.getElementById("calGrid");
+    grid.innerHTML="";
+    dows.forEach(d=>{const el=document.createElement("div");el.className="dow";el.textContent=d;grid.appendChild(el)});
 
-    var diasEnMes = new Date(calAno, calMes + 1, 0).getDate();
-    for (var day = 1; day <= diasEnMes; day++){
-      var fechaYMD = calAno + '-' + String(calMes + 1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
-      var btn = document.createElement('button');
-      btn.type = 'button'; btn.className = 'cal-day'; btn.textContent = day;
-      if (fechaYMD < hoyYMD){ btn.disabled = true; }
-      if (fechaYMD === hoyYMD){ btn.classList.add('today'); }
-      if (fechaYMD === ymd(diaSeleccionado)){ btn.classList.add('picked'); }
-      (function(y, m, d){
-        btn.addEventListener('click', function(){
-          diaSeleccionado = new Date(y, m, d);
-          renderCalendario();
-          actualizarEtiquetaFecha();
-          validarFechaHora();
-        });
-      })(calAno, calMes, day);
+    const first=new Date(calYear,calMonth,1);
+    const offset=(first.getDay()+6)%7;
+    for(let i=0;i<offset;i++){const e=document.createElement("div");e.className="day empty";grid.appendChild(e)}
+
+    const today=new Date();today.setHours(0,0,0,0);
+    const maxDate=new Date(today.getFullYear(),today.getMonth()+12,0);maxDate.setHours(0,0,0,0);
+    const days=new Date(calYear,calMonth+1,0).getDate();
+
+    for(let d=1;d<=days;d++){
+      const date=new Date(calYear,calMonth,d);date.setHours(0,0,0,0);
+      const btn=document.createElement("button");
+      btn.type="button";btn.className="day";btn.textContent=d;
+
+      // Lunes deshabilitado + pasado + fuera de 12 meses
+      if(date<today || date>maxDate || date.getDay()===1) btn.disabled=true;
+      if(+date===+today) btn.classList.add("today");
+      if(isoFromDate(date)===isoFromDate(selectedDate)) btn.classList.add("selected");
+
+      btn.onclick=()=>{
+        selectedDate=date;
+        renderCalendar();
+        renderPicked();
+        buildReservationTimes();
+      };
       grid.appendChild(btn);
     }
 
-    document.getElementById('calMonthLabel').textContent = MESES[calMes] + ' ' + calAno;
-    document.getElementById('calPrev').disabled = (calAno === ahora.getFullYear() && calMes === ahora.getMonth());
-    document.getElementById('calNext').disabled = (calAno === calMax.getFullYear() && calMes === calMax.getMonth());
+    document.getElementById("calTitle").textContent=`${monthNames[calMonth]} ${calYear}`;
+    document.getElementById("prevMonth").disabled=(calYear===today.getFullYear()&&calMonth===today.getMonth());
+
+    const lastMonth=new Date(today.getFullYear(),today.getMonth()+11,1);
+    document.getElementById("nextMonth").disabled=(calYear===lastMonth.getFullYear()&&calMonth===lastMonth.getMonth());
   }
 
-  document.getElementById('calPrev').addEventListener('click', function(){
-    calMes--; if (calMes < 0){ calMes = 11; calAno--; }
-    renderCalendario();
-  });
-  document.getElementById('calNext').addEventListener('click', function(){
-    calMes++; if (calMes > 11){ calMes = 0; calAno++; }
-    renderCalendario();
-  });
-
-  function actualizarEtiquetaFecha(){
-    document.getElementById('calPickedLabel').innerHTML = 'Seleccionado: <b>' + diaSeleccionado.toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' }) + '</b>';
+  function renderPicked(){
+    document.getElementById("pickedDate").innerHTML=`Seleccionado: <b>${selectedDate.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}</b>`;
   }
 
-  function validarFechaHora(){
-    var errorBox = document.getElementById('errorHora');
-    var cta = document.getElementById('ctaReservar');
-    var esHoy = ymd(diaSeleccionado) === hoyYMD;
-    var seleccionado = new Date(ymd(diaSeleccionado) + 'T' + horaSelect.value + ':00');
-    var invalido = esHoy && seleccionado.getTime() < ahora.getTime();
-    errorBox.classList.toggle('on', invalido);
-    cta.disabled = invalido;
-  }
-  horaSelect.addEventListener('change', validarFechaHora);
-
-  renderCalendario();
-  actualizarEtiquetaFecha();
-  validarFechaHora();
-
-  function confirmarReserva(){
-    if (document.getElementById('ctaReservar').disabled) return;
-    var nombre = document.getElementById('f-nombre').value || 'Cliente';
-    var fechaBonita = diaSeleccionado.toLocaleDateString('es-ES', { weekday:'short', day:'numeric', month:'short' });
-    var hora = horaSelect.value;
-    var zona = document.querySelector('.zone-pick button.picked').textContent;
-
-    document.getElementById('tkNombre').textContent = nombre;
-    document.getElementById('tkFecha').textContent = fechaBonita;
-    document.getElementById('tkHora').textContent = hora;
-    document.getElementById('tkPax').textContent = pax;
-    document.getElementById('tkZona').textContent = zona;
-    document.getElementById('formBody').classList.add('hidden');
-    document.getElementById('ticketBody').classList.add('on');
-
-    var msg = 'Hola! Quiero reservar mesa 🥐\n👤 ' + nombre + '\n📅 ' + fechaBonita + '\n🕒 ' + hora + '\n🧑‍🤝‍🧑 ' + pax + ' personas\n📍 Zona: ' + zona;
-    document.getElementById('waMsgCliente').textContent = msg;
-    document.getElementById('waClienteWrap').style.display = 'block';
+  function renderOwnerDateLabel(){
+    document.getElementById("ownerDateLabel").textContent =
+      ownerSelectedDate.toLocaleDateString("es-ES",{day:"2-digit",month:"2-digit",year:"numeric"});
   }
 
-  // ---------- day strip del panel ----------
-  var diasCorto = ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'];
-  var strip = document.getElementById('dayStrip');
-  for (var i = 0; i < 7; i++){
-    var d = new Date(ahora.getTime()); d.setDate(ahora.getDate() + i);
-    var pill = document.createElement('div');
-    pill.className = 'day-pill' + (i === 0 ? ' on' : '');
-    pill.innerHTML = '<span class="d">' + (i === 0 ? 'HOY' : diasCorto[d.getDay()]) + '</span><span class="n">' + d.getDate() + '</span>';
-    pill.onclick = function(){ document.querySelectorAll('.day-pill').forEach(function(p){ p.classList.remove('on'); }); this.classList.add('on'); };
-    strip.appendChild(pill);
-  }
+  function renderOwnerCalendar(){
+    const grid=document.getElementById("ownerCalGrid");
+    grid.innerHTML="";
+    dows.forEach(d=>{const el=document.createElement("div");el.className="dow";el.textContent=d;grid.appendChild(el)});
 
-  // ---------- datos de ejemplo: mesas y reservas de hoy ----------
-  var mesas = [
-    { id:1, cap:2 }, { id:2, cap:2 }, { id:3, cap:2 },
-    { id:4, cap:4 }, { id:5, cap:4 }, { id:6, cap:4 }, { id:7, cap:4 },
-    { id:8, cap:6 }
-  ];
-  var DURACION_MIN = 90;
-  var reservas = [
-    { id:1, nombre:'Consuelo Vidal', tel:'+34 611 204 887', hora:'12:00', pax:2, zona:'Salón',   estado:'confirmada', mesa:1 },
-    { id:2, nombre:'Renzo Aguilar',  tel:'+34 622 883 015', hora:'13:00', pax:4, zona:'Salón',   estado:'pendiente',  mesa:null },
-    { id:3, nombre:'Familia Bazán',  tel:'+34 655 320 194', hora:'14:00', pax:6, zona:'Terraza', estado:'pendiente',  mesa:null },
-    { id:4, nombre:'Ana Ochante',    tel:'+34 699 411 762', hora:'19:00', pax:4, zona:'Salón',   estado:'confirmada', mesa:5, recordatorio:true },
-    { id:5, nombre:'Cumpleaños Rossi', tel:'+34 688 240 013', hora:'20:00', pax:6, zona:'Terraza', estado:'confirmada', mesa:8 },
-    { id:6, nombre:'Grupo Fernández', tel:'+34 633 970 552', hora:'20:00', pax:6, zona:'Terraza', estado:'pendiente',  mesa:null }
-  ];
+    const first=new Date(ownerCalYear,ownerCalMonth,1);
+    const offset=(first.getDay()+6)%7;
+    for(let i=0;i<offset;i++){const e=document.createElement("div");e.className="day empty";grid.appendChild(e)}
 
-  var HORAS_AGENDA = [];
-  for (var hh = 11; hh <= 23; hh++){ HORAS_AGENDA.push(String(hh).padStart(2,'0') + ':00'); }
+    const today=new Date();today.setHours(0,0,0,0);
+    const maxDate=new Date(today.getFullYear(),today.getMonth()+12,0);maxDate.setHours(0,0,0,0);
+    const days=new Date(ownerCalYear,ownerCalMonth+1,0).getDate();
 
-  function mesasOcupadasA(horaNum){
-    var ocupadas = {};
-    reservas.forEach(function(r){
-      if (r.estado !== 'confirmada' || !r.mesa) return;
-      var inicio = horaANum(r.hora);
-      var fin = inicio + DURACION_MIN / 60;
-      if (horaNum >= inicio && horaNum < fin) ocupadas[r.mesa] = r;
-    });
-    return ocupadas;
-  }
+    for(let d=1;d<=days;d++){
+      const date=new Date(ownerCalYear,ownerCalMonth,d);date.setHours(0,0,0,0);
+      const btn=document.createElement("button");btn.type="button";btn.className="day";btn.textContent=d;
 
-  function mesasDisponibles(paxNecesario, horaStr){
-    var ocupadas = mesasOcupadasA(horaANum(horaStr));
-    return mesas.filter(function(m){ return m.cap >= paxNecesario && !ocupadas[m.id]; });
-  }
+      // Mismo criterio que el cliente: lunes deshabilitado + rango 12 meses.
+      if(date<today || date>maxDate || date.getDay()===1) btn.disabled=true;
+      if(+date===+today) btn.classList.add("today");
+      if(isoFromDate(date)===isoFromDate(ownerSelectedDate)) btn.classList.add("selected");
 
-  function crearTarjetaReserva(r){
-    var card = document.createElement('div');
-    card.className = 'res-card';
-    card.dataset.id = r.id;
-
-    var chipHtml = r.estado === 'confirmada' ? '<span class="chip confirmed">Mesa ' + r.mesa + '</span>'
-      : r.estado === 'no-viene' ? '<span class="chip cancelled">No viene</span>'
-      : '<span class="chip pending">Por confirmar</span>';
-
-    var recordatorioHtml = (r.recordatorio && r.estado === 'confirmada') ? '<div class="reminder-tag">🔔 Recordatorio enviado (1h antes)</div>' : '';
-
-    var accionesHtml = '';
-    if (r.estado === 'confirmada'){
-      accionesHtml = '<div class="res-actions"><button class="res-btn ghost" onclick="marcarNoViene(' + r.id + ')">Avisó que no viene</button></div>';
-    } else if (r.estado === 'pendiente'){
-      accionesHtml = '<div class="res-actions"><button class="res-btn" onclick="abrirAsignacion(' + r.id + ')">Asignar mesa →</button></div><div class="assign-box" id="assign-' + r.id + '"></div>';
+      btn.onclick=()=>{
+        ownerSelectedDate=date;
+        ownerCalYear=date.getFullYear();
+        ownerCalMonth=date.getMonth();
+        selectedReservation=null;
+        selectedTable=null;
+        renderOwnerDateLabel();
+        buildOwnerTimes();
+        renderOwnerCalendar();
+        document.getElementById("ownerCalPop").classList.remove("active");
+        renderOwner();renderFloor();
+      };
+      grid.appendChild(btn);
     }
 
-    card.innerHTML =
-      '<div class="res-top"><b>' + r.nombre + '</b>' + chipHtml + '</div>' +
-      '<span class="res-meta">' + r.pax + ' personas · ' + r.zona + '</span>' +
-      recordatorioHtml + accionesHtml;
-    return card;
+    document.getElementById("ownerCalTitle").textContent=`${monthNames[ownerCalMonth]} ${ownerCalYear}`;
+    document.getElementById("ownerCalPrev").disabled=(ownerCalYear===today.getFullYear()&&ownerCalMonth===today.getMonth());
+    const lastMonth=new Date(today.getFullYear(),today.getMonth()+11,1);
+    document.getElementById("ownerCalNext").disabled=(ownerCalYear===lastMonth.getFullYear()&&ownerCalMonth===lastMonth.getMonth());
   }
 
-  function pintarAgenda(){
-    var cont = document.getElementById('agendaBody');
-    cont.innerHTML = '';
-    HORAS_AGENDA.forEach(function(hora){
-      var itemsDeEstaHora = reservas.filter(function(r){ return r.hora === hora; });
-      var row = document.createElement('div'); row.className = 'agenda-row';
-      var horaEl = document.createElement('div'); horaEl.className = 'agenda-hour'; horaEl.textContent = hora;
-      var itemsEl = document.createElement('div'); itemsEl.className = 'agenda-items';
-      if (itemsDeEstaHora.length === 0){
-        itemsEl.innerHTML = '<div class="agenda-empty">Sin reservas a esta hora</div>';
-      } else {
-        itemsDeEstaHora.forEach(function(r){ itemsEl.appendChild(crearTarjetaReserva(r)); });
+  document.getElementById("ownerDateTrigger").onclick=()=>{
+    document.getElementById("ownerCalPop").classList.toggle("active");
+  };
+  document.getElementById("ownerCalPrev").onclick=()=>{
+    ownerCalMonth--;if(ownerCalMonth<0){ownerCalMonth=11;ownerCalYear--}renderOwnerCalendar();
+  };
+  document.getElementById("ownerCalNext").onclick=()=>{
+    ownerCalMonth++;if(ownerCalMonth>11){ownerCalMonth=0;ownerCalYear++}renderOwnerCalendar();
+  };
+
+  document.getElementById("ownerCalPop").addEventListener("click", function(e){
+    e.stopPropagation();
+  });
+  document.getElementById("ownerDateTrigger").addEventListener("click", function(e){
+    e.stopPropagation();
+  });
+  document.addEventListener("click", function(e){
+    const pop=document.getElementById("ownerCalPop");
+    const trigger=document.getElementById("ownerDateTrigger");
+    if(!pop.contains(e.target) && !trigger.contains(e.target)){
+      pop.classList.remove("active");
+    }
+  });
+
+
+  document.getElementById("prevMonth").onclick=()=>{calMonth--;if(calMonth<0){calMonth=11;calYear--}renderCalendar()};
+  document.getElementById("nextMonth").onclick=()=>{calMonth++;if(calMonth>11){calMonth=0;calYear++}renderCalendar()};
+
+  document.querySelectorAll(".switcher button").forEach(btn=>{
+    btn.onclick=()=>{
+      document.querySelectorAll(".switcher button").forEach(b=>b.classList.remove("active"));
+      document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(`view-${btn.dataset.view}`).classList.add("active");
+      if(btn.dataset.view==="owner"){renderOwner();renderFloor()}
+    }
+  });
+
+  document.getElementById("minus").onclick=()=>{pax=Math.max(1,pax-1);document.getElementById("pax").textContent=pax};
+  document.getElementById("plus").onclick=()=>{pax=Math.min(14,pax+1);document.getElementById("pax").textContent=pax};
+
+  document.getElementById("reserveBtn").onclick=()=>{
+    const name=document.getElementById("name").value.trim()||"Cliente";
+    const phone=document.getElementById("phone").value.trim()||"Sin teléfono";
+    const time=document.getElementById("time").value;
+    if(!time) return;
+    const dateTxt=selectedDate.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+    const dateISO=isoFromDate(selectedDate);
+    const note=document.getElementById("note").value.trim();
+
+    const msg=`Hola, quiero reservar una mesa.
+
+Nombre: ${name}
+Día: ${dateTxt}
+Hora: ${time}
+Personas: ${pax}
+Teléfono: ${phone}${note?`\nObservaciones: ${note}`:""}`;
+
+    // En el boceto, la solicitud entra también al panel del dueño.
+    const newId=Math.max(...reservations.map(r=>r.id))+1;
+    reservations.push({
+      id:newId,date:dateISO,name,phone,time,pax,status:"pending",
+      table:null
+    });
+    currentClientReservationId=newId;
+
+    document.getElementById("sumName").textContent=name;
+    document.getElementById("sumDate").textContent=dateTxt;
+    document.getElementById("sumTime").textContent=time;
+    document.getElementById("sumPax").textContent=pax;
+    document.getElementById("sumPhone").textContent=phone;
+    document.getElementById("sumStatus").textContent="Pendiente";
+    document.getElementById("sumStatus").style.color="var(--amber)";
+    document.getElementById("waLink").href=`https://wa.me/${restaurantPhone}?text=${encodeURIComponent(msg)}`;
+
+    document.getElementById("bookingForm").style.display="none";
+    document.getElementById("success").classList.remove("confirmed");
+    document.getElementById("success").classList.add("active");
+  };
+
+  
+
+  function timeToMin(t){const [h,m]=t.split(":").map(Number);return h*60+m}
+
+  function manualState(tableId,date,time){
+    const x=manualStates.find(s=>s.table===tableId&&s.date===date&&s.time===time);
+    return x ? x.status : null;
+  }
+
+  function occupiedAt(tableId,date,time){
+    const manual=manualState(tableId,date,time);
+    if(manual==="busy") return true;
+    const cur=timeToMin(time);
+    return reservations.some(r=>{
+      if(r.status!=="confirmed"||r.table!==tableId||r.date!==date) return false;
+      const st=timeToMin(r.time);
+      return cur>=st && cur<st+90;
+    });
+  }
+
+  function availableTablesFor(r){
+    return tables
+      .filter(t=>t.cap>=r.pax && !occupiedAt(t.id,r.date,r.time))
+      .sort((a,b)=>(a.cap-r.pax)-(b.cap-r.pax) || a.id-b.id);
+  }
+
+  function renderFloor(){
+    const date=isoFromDate(ownerSelectedDate);
+    const time=document.getElementById("ownerTime").value;
+    const quick=document.getElementById("quickPanel");
+    quick.classList.remove("active");
+
+    const assigning = selectedReservation
+      ? reservations.find(x=>x.id===selectedReservation)
+      : null;
+
+    document.querySelectorAll(".table").forEach(btn=>{
+      const id=Number(btn.dataset.table);
+      const cap=Number(btn.dataset.cap);
+      const manual=manualState(id,date,time);
+      const busy=occupiedAt(id,date,time);
+
+      btn.classList.remove("free","busy","pending","selected","unavailable");
+
+      if(manual==="pending"){
+        btn.classList.add("pending");
+        btn.querySelector(".state").textContent="Pendiente";
+      }else if(busy){
+        btn.classList.add("busy");
+        btn.querySelector(".state").textContent="Ocupada";
+      }else{
+        btn.classList.add("free");
+        btn.querySelector(".state").textContent="Libre";
       }
-      row.appendChild(horaEl); row.appendChild(itemsEl);
-      cont.appendChild(row);
+
+      btn.disabled=false;
+
+      // Al asignar una reserva solo quedan activas las mesas que realmente sirven:
+      // capacidad suficiente + libres exactamente en esa fecha/hora.
+      if(assigning){
+        const compatible = cap>=assigning.pax && !occupiedAt(id,assigning.date,assigning.time)
+          && manualState(id,assigning.date,assigning.time)!=="pending";
+        if(!compatible){
+          btn.classList.add("unavailable");
+          btn.disabled=true;
+        }
+      }
+
+      if(selectedTable===id){
+        btn.disabled=false;
+        btn.classList.remove("free","busy","pending","unavailable");
+        btn.classList.add("selected");
+        btn.querySelector(".state").textContent="Seleccionada";
+      }
     });
   }
+  document.getElementById("ownerTime").onchange=()=>{
+    selectedReservation=null;selectedTable=null;renderOwner();renderFloor()
+  };
 
-  function mensajeWa(nombre, tel, texto){
-    return '<p class="step-caption" style="margin:10px 0 8px; text-align:left; max-width:none;">Esto le llega por WhatsApp a <b>' + nombre + '</b>:</p>' +
-      '<div class="wa-mock" style="width:100%;"><div class="wa-head"><div class="wa-avatar">' + nombre[0] + '</div><div><b>' + nombre + '</b><span>' + tel + '</span></div></div>' +
-      '<div class="wa-chat"><div class="wa-bubble out">' + texto + '</div></div></div>';
-  }
+  document.querySelectorAll(".table").forEach(btn=>btn.onclick=()=>{
+    const id=Number(btn.dataset.table);
+    const cap=Number(btn.dataset.cap);
+    const date=isoFromDate(ownerSelectedDate);
+    const time=document.getElementById("ownerTime").value;
 
-  function abrirAsignacion(id){
-    var r = reservas.find(function(x){ return x.id === id; });
-    var box = document.getElementById('assign-' + id);
-    var disponibles = mesasDisponibles(r.pax, r.hora);
-    var html = '<div class="lbl">Mesas libres a las ' + r.hora + ' para ' + r.pax + ' personas</div>';
-
-    if (disponibles.length === 0){
-      html += '<div class="no-mesa"><p>No hay mesa libre para ' + r.pax + ' personas a las ' + r.hora + '. Prueba a proponerle otra hora, o dile que le avisas en cuanto se libere sitio.</p>' +
-        '<div class="no-mesa-actions"><button type="button" onclick="proponerAlternativa(' + id + ')">Proponer por WhatsApp →</button></div></div>' +
-        '<div class="sent-note" id="sent-' + id + '"></div>';
-    } else {
-      html += '<div class="table-options" id="options-' + id + '">';
-      disponibles.forEach(function(m){
-        html += '<button type="button" class="table-option" onclick="elegirMesa(' + id + ',' + m.id + ',this)"><span>Mesa ' + m.id + '</span><span class="cap">' + m.cap + ' plazas</span></button>';
-      });
-      html += '</div><button class="confirm-btn" id="confirmBtn-' + id + '" disabled onclick="confirmarMesa(' + id + ')">Confirmar y avisar</button>' +
-        '<div class="sent-note" id="sent-' + id + '"></div>';
+    // Si está asignando una reserva: solo permite mesas compatibles y libres
+    if(selectedReservation){
+      const r=reservations.find(x=>x.id===selectedReservation);
+      if(cap<r.pax) return;
+      if(occupiedAt(id,r.date,r.time)) return;
+      selectedTable=id;
+      renderFloor();renderOwner();
+      return;
     }
 
-    box.innerHTML = html;
-    box.classList.add('on');
-    var card = box.closest('.res-card');
-    var btn = card.querySelector('.res-btn');
-    if (btn) btn.style.display = 'none';
+    // Sin reserva seleccionada: gestión inmediata para gente que entra a pie de calle
+    const manual=manualState(id,date,time);
+    const busy=occupiedAt(id,date,time);
+    const q=document.getElementById("quickPanel");
+
+    if(manual==="pending"){
+      q.innerHTML=`<button class="quick-close" onclick="closeQuick()" aria-label="Cerrar">×</button>
+        <strong>Mesa ${id} · ${cap} plazas</strong>
+        <p>Está pendiente en esta franja.</p>
+        <div class="quick-actions">
+          <button onclick="releaseTable(${id})">Marcar libre</button>
+          <button class="danger" onclick="occupyWalkIn(${id})">Marcar ocupada</button>
+        </div>`;
+    }else if(busy){
+      q.innerHTML=`<button class="quick-close" onclick="closeQuick()" aria-label="Cerrar">×</button>
+        <strong>Mesa ${id} · ${cap} plazas</strong>
+        <p>Está ocupada en esta franja.</p>
+        <div class="quick-actions">
+          <button onclick="closeQuick()">Cerrar</button>
+          <button class="danger" onclick="releaseTable(${id})">Marcar libre</button>
+        </div>`;
+    }else{
+      q.innerHTML=`<button class="quick-close" onclick="closeQuick()" aria-label="Cerrar">×</button>
+        <strong>Mesa ${id} · ${cap} plazas</strong>
+        <p>Actualiza el estado al momento para clientes que llegan sin reserva.</p>
+        <div class="quick-actions">
+          <button onclick="markPending(${id})">Pendiente</button>
+          <button class="danger" onclick="occupyWalkIn(${id})">Ocupar ahora</button>
+        </div>`;
+    }
+    q.classList.add("active");
+  });
+
+  window.closeQuick=()=>document.getElementById("quickPanel").classList.remove("active");
+
+  window.occupyWalkIn=(id)=>{
+    const date=isoFromDate(ownerSelectedDate);
+    const time=document.getElementById("ownerTime").value;
+    manualStates=manualStates.filter(x=>!(x.table===id&&x.date===date&&x.time===time));
+    manualStates.push({table:id,date,time,status:"busy"});
+    closeQuick();renderFloor();
+  };
+
+  window.markPending=(id)=>{
+    const date=isoFromDate(ownerSelectedDate);
+    const time=document.getElementById("ownerTime").value;
+    manualStates=manualStates.filter(x=>!(x.table===id&&x.date===date&&x.time===time));
+    manualStates.push({table:id,date,time,status:"pending"});
+    closeQuick();renderFloor();
+  };
+
+  window.releaseTable=(id)=>{
+    const date=isoFromDate(ownerSelectedDate);
+    const time=document.getElementById("ownerTime").value;
+
+    // Primero elimina ocupación manual si existe
+    manualStates=manualStates.filter(x=>!(x.table===id&&x.date===date&&x.time===time));
+
+    // Si la ocupación viene de una reserva confirmada, la cancelamos/liberamos
+    reservations.forEach(r=>{
+      if(r.status==="confirmed"&&r.table===id&&r.date===date){
+        const cur=timeToMin(time), st=timeToMin(r.time);
+        if(cur>=st&&cur<st+90){
+          r.status="cancelled";
+          r.table=null;
+                  }
+      }
+    });
+
+    closeQuick();renderOwner();renderFloor();
+  };
+
+  function renderOwner(){
+    const queue=document.getElementById("queue");
+    queue.innerHTML="";
+    const date=isoFromDate(ownerSelectedDate);
+
+    const list=reservations
+      .filter(r=>r.date===date && r.status!=="cancelled")
+      .sort((a,b)=>a.time.localeCompare(b.time));
+
+    list.forEach(r=>{
+      const card=document.createElement("div");
+      card.className="res";
+
+      const pill=r.status==="confirmed"
+        ? `<span class="pill confirmed">Mesa ${r.table}</span>`
+        : `<span class="pill pending">Pendiente</span>`;
+
+      let extra="";
+
+      if(r.status==="confirmed"){
+        extra="";
+      }else{
+        const compatible=availableTablesFor(r);
+        const suggestions=compatible.length
+          ? compatible.map(t=>`
+              <button class="suggestion ${selectedReservation===r.id&&selectedTable===t.id?"active":""}"
+                      onclick="pickSuggestion(${r.id},${t.id})">
+                Mesa ${t.id} · ${t.cap} plazas
+              </button>`).join("")
+          : `<div style="font-size:.67rem;color:var(--red)">No hay mesa compatible libre a esa hora.</div>`;
+
+        extra=`
+          <div class="actions">
+            <button class="primary" onclick="openAssign(${r.id})">Asignar mesa</button>
+          </div>
+          <div class="assign ${selectedReservation===r.id?"active":""}">
+            <div class="assign-title"><b style="color:var(--ink)">Mesas disponibles</b> · ${r.pax} personas · ${r.time}</div>
+            <div class="suggestions">${suggestions}</div>
+            <div class="confirm-row">
+              <button class="confirm" ${selectedTable?"":"disabled"} onclick="confirmReservation(${r.id})">Confirmar y avisar</button>
+            </div>
+          </div>
+          <div id="wa-${r.id}" class="wa-note"></div>`;
+      }
+
+      card.innerHTML=`
+        <div class="res-top">
+          <div>
+            <h4>${r.name}</h4>
+            <p>${new Date(r.date+"T12:00:00").toLocaleDateString("es-ES",{weekday:"short",day:"numeric",month:"short"})} · ${r.time}<br>${r.pax} personas · ${r.phone}</p>
+          </div>
+          ${pill}
+        </div>
+        ${extra}`;
+      queue.appendChild(card);
+    });
+
+    if(!list.length){
+      queue.innerHTML=`<div style="color:var(--muted);font-size:.76rem;padding:8px 0">No hay reservas para este día.</div>`;
+    }
   }
 
-  function elegirMesa(id, mesaId, btn){
-    document.querySelectorAll('#options-' + id + ' .table-option').forEach(function(b){ b.classList.remove('picked'); });
-    btn.classList.add('picked');
-    var confirmBtn = document.getElementById('confirmBtn-' + id);
-    confirmBtn.disabled = false;
-    confirmBtn.dataset.mesa = mesaId;
-  }
+  window.openAssign=(id)=>{
+    selectedReservation=id;
+    selectedTable=null;
 
-  function confirmarMesa(id){
-    var confirmBtn = document.getElementById('confirmBtn-' + id);
-    var mesaId = parseInt(confirmBtn.dataset.mesa, 10);
-    var r = reservas.find(function(x){ return x.id === id; });
-    r.estado = 'confirmada'; r.mesa = mesaId;
+    const r=reservations.find(x=>x.id===id);
 
-    var card = document.querySelector('.res-card[data-id="' + id + '"]');
-    var nuevo = crearTarjetaReserva(r);
-    card.replaceWith(nuevo);
+    // Lleva el panel exactamente al día y hora de esa solicitud
+    ownerSelectedDate=new Date(r.date+"T12:00:00");
+    ownerSelectedDate.setHours(0,0,0,0);
+    ownerCalYear=ownerSelectedDate.getFullYear();
+    ownerCalMonth=ownerSelectedDate.getMonth();
 
-    var msg = '¡Hola ' + r.nombre.split(' ')[0] + '! Reserva confirmada ✅\n🕒 ' + r.hora + ' · ' + r.zona + ' · ' + r.pax + ' personas\nTe esperamos.';
-    var nota = document.createElement('div');
-    nota.className = 'sent-note on';
-    nota.innerHTML = mensajeWa(r.nombre, r.tel, msg);
-    nuevo.appendChild(nota);
+    renderOwnerDateLabel();
+    renderOwnerCalendar();
+    buildOwnerTimes();
 
-    actualizarStats();
-  }
+    // La hora de la solicitud debe existir en el horario válido del restaurante
+    if([...document.getElementById("ownerTime").options].some(o=>o.value===r.time)){
+      document.getElementById("ownerTime").value=r.time;
+    }
 
-  function proponerAlternativa(id){
-    var r = reservas.find(function(x){ return x.id === id; });
-    var sent = document.getElementById('sent-' + id);
-    var msg = '¡Hola ' + r.nombre.split(' ')[0] + '! De momento no tenemos mesa libre para ' + r.pax + ' a las ' + r.hora + '. ¿Te viene bien otra hora, o prefieres que te avisemos en cuanto se libere sitio? 🙏';
-    sent.className = 'sent-note on';
-    sent.innerHTML = mensajeWa(r.nombre, r.tel, msg);
-  }
+    // Al renderizar la solicitud se abre el bloque con las mesas compatibles
+    renderOwner();
+    renderFloor();
+  };
 
-  function marcarNoViene(id){
-    var r = reservas.find(function(x){ return x.id === id; });
-    r.estado = 'no-viene';
-    var card = document.querySelector('.res-card[data-id="' + id + '"]');
-    var nuevo = crearTarjetaReserva(r);
-    card.replaceWith(nuevo);
-    actualizarStats();
-  }
+  window.pickSuggestion=(rid,tid)=>{
+    selectedReservation=rid;
+    selectedTable=tid;
+    renderOwner();renderFloor();
+  };
 
-  function actualizarStats(){
-    document.getElementById('statReservas').textContent = reservas.filter(function(r){ return r.estado !== 'no-viene'; }).length;
-    document.getElementById('statComensales').textContent = reservas.filter(function(r){ return r.estado !== 'no-viene'; }).reduce(function(s, r){ return s + r.pax; }, 0);
-    var ahoraNum = ahora.getHours() + ahora.getMinutes() / 60;
-    var ocupadasAhora = Object.keys(mesasOcupadasA(ahoraNum)).length;
-    document.getElementById('statLibres').textContent = mesas.length - ocupadasAhora;
-  }
+  window.cancelAssign=()=>{
+    selectedReservation=null;
+    selectedTable=null;
+    renderOwner();renderFloor();
+  };
 
-  pintarAgenda();
-  actualizarStats();
+  window.confirmReservation=(id)=>{
+    if(!selectedTable) return;
+    const r=reservations.find(x=>x.id===id);
+    r.status="confirmed";
+    r.table=selectedTable;
+    
+    const first=r.name.split(" ")[0];
+    selectedReservation=null;
+    selectedTable=null;
+
+    renderOwner();renderFloor();
+
+    // Simula el mensaje de confirmación al cliente con la dirección exacta.
+    setTimeout(()=>{
+      const cards=[...document.querySelectorAll(".res")];
+      const card=cards.find(c=>c.textContent.includes(r.name));
+      if(card){
+        const note=document.createElement("div");
+        note.className="wa-note active";
+        note.textContent=`WhatsApp preparado: “Hola ${first}, tu reserva de las ${r.time} para ${r.pax} personas está confirmada. Te esperamos en C. de Jacinto Verdaguer, 6, Carabanchel, 28019 Madrid.”`;
+        card.appendChild(note);
+      }
+    },30);
+
+    // Si es la solicitud que acaba de hacer el cliente en esta demo,
+    // su panel cambia visualmente a confirmado.
+    if(currentClientReservationId===id){
+      const success=document.getElementById("success");
+      success.classList.add("confirmed");
+      document.getElementById("sumStatus").textContent="Confirmada";
+      document.getElementById("sumStatus").style.color="var(--green)";
+      success.querySelector("h3").textContent="Reserva confirmada";
+      success.querySelector("p").textContent="Tu mesa está confirmada. Te esperamos en C. de Jacinto Verdaguer, 6, Carabanchel, 28019 Madrid.";
+    }
+  };
+
+
+
+  renderCalendar();
+  renderPicked();
+  buildReservationTimes();
+
+  renderOwnerDateLabel();
+  renderOwnerCalendar();
+  buildOwnerTimes();
+
+  renderOwner();
+  renderFloor();
+  
 </script>
+</body>
+</html>
