@@ -1,0 +1,604 @@
+<title>Madruga Reservas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  :root{
+    --bg:#F4F2EC;
+    --surface:#FFFFFF;
+    --surface-2:#ECE9DE;
+    --ink:#1C1B17;
+    --muted:#736D5E;
+    --border:#DEDACB;
+    --border-soft:#E8E5D9;
+    --fill:#1C1B17;
+    --fill-ink:#F4F2EC;
+
+    --free:#1E7A4C;      --free-bg:#E3F3E9;
+    --pending:#9C6A0A;   --pending-bg:#FBF0D9;
+    --occupied:#B23B2E;  --occupied-bg:#FBE8E4;
+    --cancelled:#8A8577; --cancelled-bg:#EFEDE4;
+
+    --shadow: 0 1px 2px rgba(20,18,10,0.06), 0 14px 30px rgba(20,18,10,0.09);
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--bg); color:var(--ink); font-family:"Manrope", Arial, sans-serif; padding: 30px 20px 60px; }
+  h1,h2,h3{ font-family:"Manrope", sans-serif; font-weight:800; text-wrap:balance; margin:0; letter-spacing:-0.01em; }
+  .mono{ font-family:"IBM Plex Mono", "Courier New", monospace; font-variant-numeric:tabular-nums; }
+
+  .shell{ max-width: 1180px; margin: 0 auto; }
+  .intro{ max-width: 720px; margin: 0 auto 22px; text-align:center; }
+  .eyebrow{ font-family:"IBM Plex Mono", monospace; font-size:0.7rem; letter-spacing:0.16em; text-transform:uppercase; color: var(--muted); margin-bottom: 10px; display:block; }
+  .intro h1{ font-size: clamp(1.5rem, 3.2vw, 2.1rem); color: var(--ink); }
+  .intro p{ color: var(--muted); font-size:0.95rem; line-height:1.6; margin-top:10px; }
+
+  .flow{ max-width: 980px; margin: 0 auto 34px; display:grid; grid-template-columns:repeat(4,1fr); gap:0; }
+  .flow-step{ position:relative; padding: 0 14px; text-align:center; }
+  .flow-step .num{ width:26px; height:26px; border-radius:50%; background:var(--surface); border:1px solid var(--border); color:var(--ink); font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:0.78rem; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; position:relative; z-index:1; }
+  .flow-step::before{ content:""; position:absolute; top:13px; left:-50%; width:100%; height:1px; background:var(--border); z-index:0; }
+  .flow-step:first-child::before{ display:none; }
+  .flow-step h3{ font-size:0.8rem; font-weight:700; }
+  .flow-step p{ font-size:0.72rem; color:var(--muted); margin-top:4px; line-height:1.4; }
+  @media (max-width:720px){ .flow{ grid-template-columns:1fr 1fr; row-gap:22px; } .flow-step:nth-child(3)::before{ display:none; } }
+
+  .tabs{ display:flex; gap:6px; justify-content:center; margin: 0 auto 30px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:5px; max-width: fit-content; }
+  .tabs button{ font-family:"Manrope", sans-serif; font-weight:700; font-size:0.84rem; color:var(--muted); background:transparent; border:none; border-radius:8px; padding:9px 18px; cursor:pointer; }
+  .tabs button:hover{ color:var(--ink); }
+  .tabs button.on{ background:var(--fill); color:var(--fill-ink); }
+  .tabs button:focus-visible{ outline:2px solid var(--pending); outline-offset:2px; }
+
+  .view{ display:none; }
+  .view.on{ display:block; animation: fade .2s ease; }
+  @keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
+  @media (prefers-reduced-motion: reduce){ .view.on{ animation:none; } }
+
+  /* ==================== CLIENTE ==================== */
+  .cliente-cols{ display:flex; gap:26px; justify-content:center; flex-wrap:wrap; align-items:flex-start; }
+  .phone{ width: 380px; max-width:100%; background:var(--surface); border-radius: 30px; border:1px solid var(--border); box-shadow: var(--shadow); overflow:hidden; }
+  .phone-notch{ height:24px; display:flex; align-items:center; justify-content:center; }
+  .phone-notch::after{ content:""; width:84px; height:5px; border-radius:4px; background:var(--border); }
+
+  .ph-hero{ padding: 20px 24px 24px; border-bottom:1px solid var(--border); }
+  .ph-hero .tag{ font-family:"IBM Plex Mono", monospace; font-size:0.66rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); }
+  .ph-hero h2{ font-size:1.35rem; margin-top:8px; }
+  .ph-hero .meta{ margin-top:10px; font-size:0.8rem; color:var(--muted); line-height:1.6; }
+  .ph-hero .meta b{ color:var(--ink); font-weight:700; }
+
+  .ph-body{ padding: 20px 22px 26px; }
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-size:0.76rem; font-weight:700; color:var(--muted); margin-bottom:6px; }
+  .field input, .field select, .field textarea{ width:100%; font-family:"Manrope", sans-serif; font-size:0.9rem; color:var(--ink); background:var(--surface-2); border:1px solid var(--border); border-radius:9px; padding:10px 12px; }
+  .field textarea{ resize:vertical; min-height:50px; }
+
+  .calendar{ border:1px solid var(--border); border-radius:11px; padding:12px; background:var(--surface-2); }
+  .cal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .cal-head button{ width:28px; height:28px; border-radius:7px; border:1px solid var(--border); background:var(--surface); color:var(--ink); cursor:pointer; font-size:0.9rem; line-height:1; }
+  .cal-head button:disabled{ opacity:0.3; cursor:not-allowed; }
+  .cal-head span{ font-family:"IBM Plex Mono",monospace; font-size:0.78rem; font-weight:600; text-transform:capitalize; }
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  .cal-dow{ font-size:0.62rem; color:var(--muted); text-align:center; text-transform:uppercase; padding-bottom:4px; }
+  .cal-day{ aspect-ratio:1; border:none; background:transparent; color:var(--ink); font-family:"IBM Plex Mono",monospace; font-size:0.78rem; border-radius:8px; cursor:pointer; }
+  .cal-day:disabled{ color:var(--border); cursor:not-allowed; }
+  .cal-day.empty{ visibility:hidden; cursor:default; }
+  .cal-day.today{ box-shadow: inset 0 0 0 1px var(--muted); }
+  .cal-day.picked{ background:var(--fill); color:var(--fill-ink); font-weight:700; box-shadow:none; }
+  .cal-picked-label{ margin:10px 2px 0; font-size:0.74rem; color:var(--muted); }
+  .cal-picked-label b{ color:var(--ink); }
+
+  .stepper{ display:flex; align-items:center; justify-content:space-between; background:var(--surface-2); border:1px solid var(--border); border-radius:9px; padding:6px 6px 6px 14px; }
+  .stepper .count{ font-family:"IBM Plex Mono", monospace; font-weight:600; font-size:1rem; min-width:60px; text-align:center; }
+  .stepper button{ width:30px; height:30px; border-radius:7px; border:1px solid var(--border); background:var(--surface); color:var(--ink); font-size:1.05rem; cursor:pointer; }
+
+  .zone-pick{ display:flex; gap:8px; }
+  .zone-pick button{ flex:1; padding:9px 8px; border-radius:9px; border:1px solid var(--border); background:var(--surface-2); color:var(--muted); font-family:"Manrope", sans-serif; font-weight:700; font-size:0.8rem; cursor:pointer; }
+  .zone-pick button.picked{ background:var(--fill); border-color:var(--fill); color:var(--fill-ink); }
+
+  .field-error{ font-size:0.74rem; color:var(--occupied); margin-top:-8px; margin-bottom:14px; display:none; }
+  .field-error.on{ display:block; }
+
+  .cta{ width:100%; margin-top:6px; background:var(--fill); color:var(--fill-ink); border:none; border-radius:11px; padding:13px; font-family:"Manrope", sans-serif; font-weight:800; font-size:0.92rem; cursor:pointer; }
+  .cta:disabled{ opacity:0.35; cursor:not-allowed; }
+  .hint{ text-align:center; font-size:0.7rem; color:var(--muted); margin-top:10px; }
+
+  .ticket{ display:none; padding: 20px 22px 26px; }
+  .ticket.on{ display:block; }
+  .ph-body.hidden{ display:none; }
+  .stub{ border:1px dashed var(--border); border-radius:14px; padding:18px; background:var(--surface-2); }
+  .stub .num{ font-family:"IBM Plex Mono", monospace; font-size:0.7rem; color:var(--muted); letter-spacing:0.08em; }
+  .stub h3{ font-size:1.1rem; margin-top:4px; }
+  .stub .grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px; }
+  .stub .grid div span{ display:block; font-size:0.66rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; }
+  .stub .grid div b{ font-family:"IBM Plex Mono", monospace; font-size:0.95rem; }
+  .status-pill{ display:inline-flex; align-items:center; gap:6px; margin-top:16px; font-size:0.78rem; font-weight:700; color: var(--pending); background:var(--pending-bg); padding:6px 12px; border-radius:99px; }
+  .status-pill .dot{ width:6px; height:6px; border-radius:50%; background:var(--pending); }
+  .step-caption{ text-align:center; font-size:0.74rem; color:var(--muted); margin-bottom:10px; max-width:380px; }
+  .step-caption b{ color:var(--ink); }
+
+  .wa-mock{ width:340px; max-width:100%; border-radius:16px; overflow:hidden; border:1px solid var(--border); box-shadow:var(--shadow); background:var(--surface); }
+  .wa-head{ background:var(--surface-2); color:var(--ink); padding:12px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); }
+  .wa-avatar{ width:32px; height:32px; border-radius:50%; background:var(--pending); color:#FFFBF0; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.8rem; flex-shrink:0; }
+  .wa-head div b{ display:block; font-size:0.86rem; }
+  .wa-head div span{ display:block; font-size:0.68rem; color:var(--muted); }
+  .wa-chat{ padding:16px; min-height: 120px; display:flex; flex-direction:column; gap:10px; background:var(--bg); }
+  .wa-bubble{ max-width:88%; border-radius:11px; padding:9px 12px; font-size:0.8rem; line-height:1.5; white-space:pre-line; }
+  .wa-bubble.out{ background:var(--free-bg); color:var(--ink); align-self:flex-end; border:1px solid var(--free); border-top-right-radius:3px; }
+
+  /* ==================== PANEL RESTAURANTE ==================== */
+  .panel{ background:var(--surface); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow); padding: 20px 20px 24px; }
+  .panel-head{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:18px; }
+  .panel-head h2{ font-size:1.15rem; }
+
+  .day-strip{ display:flex; gap:6px; overflow-x:auto; padding-bottom:2px; margin-bottom:18px; }
+  .day-pill{ flex-shrink:0; border:1px solid var(--border); background:var(--surface-2); color:var(--muted); border-radius:10px; padding:8px 14px; text-align:center; cursor:pointer; font-family:"IBM Plex Mono",monospace; }
+  .day-pill .d{ font-size:0.66rem; text-transform:uppercase; letter-spacing:0.05em; display:block; }
+  .day-pill .n{ font-size:1rem; font-weight:600; display:block; margin-top:2px; }
+  .day-pill.on{ background:var(--fill); border-color:var(--fill); color:var(--fill-ink); }
+
+  .stats{ display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:10px; margin-bottom:22px; }
+  .stat{ border:1px solid var(--border); border-radius:12px; padding:12px 14px; background:var(--surface-2); }
+  .stat span{ font-size:0.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; }
+  .stat b{ display:block; font-family:"IBM Plex Mono", monospace; font-size:1.35rem; margin-top:4px; }
+  .stat.accented b{ color:var(--free); }
+
+  .section-title{ font-size:0.74rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); margin-bottom:10px; }
+
+  /* agenda estilo calendario: hora a la izquierda, reservas a la derecha */
+  .agenda{ border-top:1px solid var(--border-soft); }
+  .agenda-row{ display:flex; gap:14px; padding:12px 0; border-bottom:1px solid var(--border-soft); }
+  .agenda-hour{ width:52px; flex-shrink:0; font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:0.85rem; color:var(--muted); padding-top:2px; }
+  .agenda-items{ flex:1; display:flex; flex-direction:column; gap:8px; min-width:0; }
+  .agenda-empty{ font-size:0.78rem; color:var(--muted); opacity:0.7; padding-top:2px; }
+
+  .res-card{ border:1px solid var(--border); border-radius:11px; padding:10px 12px; background:var(--surface-2); }
+  .res-top{ display:flex; align-items:center; gap:10px; }
+  .res-top b{ font-size:0.88rem; flex:1; min-width:0; }
+  .res-meta{ font-size:0.74rem; color:var(--muted); display:block; margin-top:1px; margin-bottom:2px; }
+  .chip{ font-size:0.68rem; font-weight:700; padding:4px 9px; border-radius:99px; white-space:nowrap; }
+  .chip.pending{ color:var(--pending); background:var(--pending-bg); }
+  .chip.confirmed{ color:var(--free); background:var(--free-bg); }
+  .chip.cancelled{ color:var(--cancelled); background:var(--cancelled-bg); }
+  .reminder-tag{ font-size:0.66rem; color:var(--pending); margin-top:6px; display:inline-flex; align-items:center; gap:4px; }
+
+  .res-actions{ display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+  .res-btn{ border:1px solid var(--border); background:var(--surface); color:var(--ink); font-size:0.72rem; font-weight:700; padding:6px 10px; border-radius:8px; cursor:pointer; }
+  .res-btn.ghost{ color:var(--muted); background:transparent; border-color:transparent; text-decoration:underline; }
+
+  .assign-box{ display:none; margin-top:10px; padding-top:10px; border-top:1px dashed var(--border); }
+  .assign-box.on{ display:block; }
+  .assign-box .lbl{ font-size:0.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:8px; }
+
+  .table-options{ display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
+  .table-option{ display:flex; align-items:center; justify-content:space-between; border:1px solid var(--border); background:var(--surface); color:var(--ink); border-radius:9px; padding:9px 12px; font-family:"Manrope",sans-serif; font-weight:700; font-size:0.82rem; cursor:pointer; text-align:left; }
+  .table-option .cap{ font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:0.74rem; color:var(--muted); }
+  .table-option.picked{ border-color:var(--fill); background:var(--surface-2); }
+  .table-option.picked .cap{ color:var(--ink); }
+
+  .no-mesa{ border:1px dashed var(--border); border-radius:10px; padding:12px; }
+  .no-mesa p{ margin:0 0 10px; font-size:0.82rem; color:var(--ink); line-height:1.5; }
+  .no-mesa-actions button{ background:var(--surface); border:1px solid var(--border); color:var(--ink); font-size:0.76rem; font-weight:700; padding:8px 12px; border-radius:8px; cursor:pointer; }
+
+  .confirm-btn{ background:var(--fill); color:var(--fill-ink); border:none; border-radius:8px; padding:8px 14px; font-family:"Manrope",sans-serif; font-weight:700; font-size:0.78rem; cursor:pointer; }
+  .confirm-btn:disabled{ opacity:0.35; cursor:not-allowed; }
+  .sent-note{ display:none; margin-top:10px; }
+  .sent-note.on{ display:block; }
+</style>
+
+<div class="shell">
+  <div class="intro">
+    <span class="eyebrow">Boceto de producto · reservas por QR</span>
+    <h1>Madruga con Sabor a Perú</h1>
+    <p>El cliente solo ve un formulario de reserva. El dueño ve un calendario del día: a qué hora es cada reserva, qué mesa le queda y un toque para confirmar — nada más.</p>
+  </div>
+
+  <div class="flow">
+    <div class="flow-step"><div class="num">1</div><h3>Cliente reserva</h3><p>Escanea el QR y rellena nombre, día, hora y comensales.</p></div>
+    <div class="flow-step"><div class="num">2</div><h3>Llega por WhatsApp</h3><p>Su WhatsApp se abre con el mensaje listo para enviar al local.</p></div>
+    <div class="flow-step"><div class="num">3</div><h3>El dueño asigna mesa</h3><p>Solo ve mesas libres con sitio suficiente, a esa hora.</p></div>
+    <div class="flow-step"><div class="num">4</div><h3>Confirma y avisa</h3><p>Un toque, y al cliente le llega la reserva confirmada por WhatsApp.</p></div>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="on" data-view="cliente">Vista del cliente</button>
+    <button data-view="panel">Panel del dueño</button>
+  </div>
+
+  <!-- ===================== CLIENTE ===================== -->
+  <section class="view on" id="view-cliente">
+    <div class="cliente-cols">
+      <div>
+        <p class="step-caption"><b>Paso 1–2 ·</b> el cliente rellena esto y su WhatsApp se abre listo para enviar.</p>
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="ph-hero">
+            <span class="tag">Madruga con Sabor a Perú · C. Bravo Murillo, Madrid</span>
+            <h2>Reservar mesa</h2>
+            <div class="meta">Abierto <b>todos los días</b>, de <b>11:00 a 23:00</b></div>
+          </div>
+          <div class="ph-body" id="formBody">
+            <div class="field">
+              <label for="f-nombre">Nombre y apellidos</label>
+              <input id="f-nombre" type="text" value="Renzo Aguilar" />
+            </div>
+            <div class="field">
+              <label>Día</label>
+              <div class="calendar" id="calendar">
+                <div class="cal-head">
+                  <button type="button" id="calPrev" aria-label="Mes anterior">‹</button>
+                  <span id="calMonthLabel"></span>
+                  <button type="button" id="calNext" aria-label="Mes siguiente">›</button>
+                </div>
+                <div class="cal-grid" id="calGrid"></div>
+              </div>
+              <p class="cal-picked-label" id="calPickedLabel"></p>
+            </div>
+            <div class="field">
+              <label for="f-hora">Hora</label>
+              <select id="f-hora"></select>
+            </div>
+            <div class="field-error" id="errorHora">Esa hora ya pasó por hoy — elige una más tarde.</div>
+            <div class="field">
+              <label>Comensales</label>
+              <div class="stepper">
+                <span class="count mono" id="pax">4</span>
+                <div style="display:flex; gap:6px;">
+                  <button type="button" aria-label="Menos comensales" onclick="cambiarPax(-1)">−</button>
+                  <button type="button" aria-label="Más comensales" onclick="cambiarPax(1)">+</button>
+                </div>
+              </div>
+            </div>
+            <div class="field">
+              <label>Zona preferida</label>
+              <div class="zone-pick">
+                <button type="button" class="picked" onclick="elegirZona(this)">Salón</button>
+                <button type="button" onclick="elegirZona(this)">Terraza</button>
+                <button type="button" onclick="elegirZona(this)">Da igual</button>
+              </div>
+            </div>
+            <div class="field">
+              <label for="f-nota">Algo que debamos saber (opcional)</label>
+              <textarea id="f-nota" placeholder="Alergias, silla para bebé, celebración…"></textarea>
+            </div>
+            <button class="cta" id="ctaReservar" onclick="confirmarReserva()">Reservar por WhatsApp →</button>
+            <p class="hint">Se abre tu WhatsApp con estos datos ya escritos, listos para enviar al local.</p>
+          </div>
+          <div class="ticket" id="ticketBody">
+            <div class="stub">
+              <span class="num">RESERVA #0057</span>
+              <h3 id="tkNombre">Renzo Aguilar</h3>
+              <div class="grid">
+                <div><span>Día</span><b id="tkFecha">—</b></div>
+                <div><span>Hora</span><b id="tkHora">—</b></div>
+                <div><span>Comensales</span><b id="tkPax">4</b></div>
+                <div><span>Zona</span><b id="tkZona">Salón</b></div>
+              </div>
+              <div class="status-pill"><span class="dot"></span> Pendiente de confirmar por WhatsApp</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="waClienteWrap" style="display:none;">
+        <p class="step-caption"><b>Paso 2 ·</b> esto es lo que se abre en el WhatsApp del cliente, con el local (692 209 204) como destinatario.</p>
+        <div class="wa-mock">
+          <div class="wa-head"><div class="wa-avatar">M</div><div><b>Madruga con Sabor a Perú</b><span>+34 692 209 204</span></div></div>
+          <div class="wa-chat"><div class="wa-bubble out" id="waMsgCliente"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PANEL DUEÑO ===================== -->
+  <section class="view" id="view-panel">
+    <p class="step-caption" style="margin:0 auto 16px;"><b>Paso 3–4 ·</b> el calendario del día, con solo tocar para asignar mesa y confirmar.</p>
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Calendario de hoy</h2>
+      </div>
+
+      <div class="day-strip" id="dayStrip"></div>
+
+      <div class="stats">
+        <div class="stat"><span>Reservas hoy</span><b id="statReservas">—</b></div>
+        <div class="stat"><span>Comensales hoy</span><b id="statComensales">—</b></div>
+        <div class="stat accented"><span>Mesas libres ahora</span><b id="statLibres">—</b></div>
+      </div>
+
+      <div class="section-title">Agenda del día</div>
+      <div class="agenda" id="agendaBody"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+  document.querySelectorAll('.tabs button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.tabs button').forEach(function(b){ b.classList.remove('on'); });
+      btn.classList.add('on');
+      var target = btn.getAttribute('data-view');
+      document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('on'); });
+      document.getElementById('view-' + target).classList.add('on');
+    });
+  });
+
+  var pax = 4;
+  function cambiarPax(delta){ pax = Math.max(1, Math.min(12, pax + delta)); document.getElementById('pax').textContent = pax; }
+  function elegirZona(btn){ btn.parentElement.querySelectorAll('button').forEach(function(b){ b.classList.remove('picked'); }); btn.classList.add('picked'); }
+
+  function ymd(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+  function horaANum(h){ var p = h.split(':'); return parseInt(p[0],10) + parseInt(p[1],10)/60; }
+
+  // ---------- hora del cliente: 11:00 a 23:00 cada 30 min ----------
+  var horaSelect = document.getElementById('f-hora');
+  var opciones = [];
+  for (var h = 11; h <= 22; h++){ opciones.push(String(h).padStart(2,'0') + ':00'); opciones.push(String(h).padStart(2,'0') + ':30'); }
+  opciones.push('23:00');
+  opciones.forEach(function(o){ var op = document.createElement('option'); op.value = o; op.textContent = o; horaSelect.appendChild(op); });
+  horaSelect.value = '13:00';
+
+  // ---------- calendario del cliente (hasta 6 meses vista) ----------
+  var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var DOW = ['L','M','X','J','V','S','D'];
+  var ahora = new Date();
+  var hoyYMD = ymd(ahora);
+  var diaSeleccionado = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+  var calAno = diaSeleccionado.getFullYear();
+  var calMes = diaSeleccionado.getMonth();
+  var calMax = new Date(ahora.getFullYear(), ahora.getMonth() + 6, 1);
+
+  function renderCalendario(){
+    var grid = document.getElementById('calGrid');
+    grid.innerHTML = '';
+    DOW.forEach(function(d){ var el = document.createElement('div'); el.className = 'cal-dow'; el.textContent = d; grid.appendChild(el); });
+
+    var primerDia = new Date(calAno, calMes, 1);
+    var offset = (primerDia.getDay() + 6) % 7;
+    for (var i = 0; i < offset; i++){ var vac = document.createElement('div'); vac.className = 'cal-day empty'; grid.appendChild(vac); }
+
+    var diasEnMes = new Date(calAno, calMes + 1, 0).getDate();
+    for (var day = 1; day <= diasEnMes; day++){
+      var fechaYMD = calAno + '-' + String(calMes + 1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+      var btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'cal-day'; btn.textContent = day;
+      if (fechaYMD < hoyYMD){ btn.disabled = true; }
+      if (fechaYMD === hoyYMD){ btn.classList.add('today'); }
+      if (fechaYMD === ymd(diaSeleccionado)){ btn.classList.add('picked'); }
+      (function(y, m, d){
+        btn.addEventListener('click', function(){
+          diaSeleccionado = new Date(y, m, d);
+          renderCalendario();
+          actualizarEtiquetaFecha();
+          validarFechaHora();
+        });
+      })(calAno, calMes, day);
+      grid.appendChild(btn);
+    }
+
+    document.getElementById('calMonthLabel').textContent = MESES[calMes] + ' ' + calAno;
+    document.getElementById('calPrev').disabled = (calAno === ahora.getFullYear() && calMes === ahora.getMonth());
+    document.getElementById('calNext').disabled = (calAno === calMax.getFullYear() && calMes === calMax.getMonth());
+  }
+
+  document.getElementById('calPrev').addEventListener('click', function(){
+    calMes--; if (calMes < 0){ calMes = 11; calAno--; }
+    renderCalendario();
+  });
+  document.getElementById('calNext').addEventListener('click', function(){
+    calMes++; if (calMes > 11){ calMes = 0; calAno++; }
+    renderCalendario();
+  });
+
+  function actualizarEtiquetaFecha(){
+    document.getElementById('calPickedLabel').innerHTML = 'Seleccionado: <b>' + diaSeleccionado.toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' }) + '</b>';
+  }
+
+  function validarFechaHora(){
+    var errorBox = document.getElementById('errorHora');
+    var cta = document.getElementById('ctaReservar');
+    var esHoy = ymd(diaSeleccionado) === hoyYMD;
+    var seleccionado = new Date(ymd(diaSeleccionado) + 'T' + horaSelect.value + ':00');
+    var invalido = esHoy && seleccionado.getTime() < ahora.getTime();
+    errorBox.classList.toggle('on', invalido);
+    cta.disabled = invalido;
+  }
+  horaSelect.addEventListener('change', validarFechaHora);
+
+  renderCalendario();
+  actualizarEtiquetaFecha();
+  validarFechaHora();
+
+  function confirmarReserva(){
+    if (document.getElementById('ctaReservar').disabled) return;
+    var nombre = document.getElementById('f-nombre').value || 'Cliente';
+    var fechaBonita = diaSeleccionado.toLocaleDateString('es-ES', { weekday:'short', day:'numeric', month:'short' });
+    var hora = horaSelect.value;
+    var zona = document.querySelector('.zone-pick button.picked').textContent;
+
+    document.getElementById('tkNombre').textContent = nombre;
+    document.getElementById('tkFecha').textContent = fechaBonita;
+    document.getElementById('tkHora').textContent = hora;
+    document.getElementById('tkPax').textContent = pax;
+    document.getElementById('tkZona').textContent = zona;
+    document.getElementById('formBody').classList.add('hidden');
+    document.getElementById('ticketBody').classList.add('on');
+
+    var msg = 'Hola! Quiero reservar mesa 🥐\n👤 ' + nombre + '\n📅 ' + fechaBonita + '\n🕒 ' + hora + '\n🧑‍🤝‍🧑 ' + pax + ' personas\n📍 Zona: ' + zona;
+    document.getElementById('waMsgCliente').textContent = msg;
+    document.getElementById('waClienteWrap').style.display = 'block';
+  }
+
+  // ---------- day strip del panel ----------
+  var diasCorto = ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'];
+  var strip = document.getElementById('dayStrip');
+  for (var i = 0; i < 7; i++){
+    var d = new Date(ahora.getTime()); d.setDate(ahora.getDate() + i);
+    var pill = document.createElement('div');
+    pill.className = 'day-pill' + (i === 0 ? ' on' : '');
+    pill.innerHTML = '<span class="d">' + (i === 0 ? 'HOY' : diasCorto[d.getDay()]) + '</span><span class="n">' + d.getDate() + '</span>';
+    pill.onclick = function(){ document.querySelectorAll('.day-pill').forEach(function(p){ p.classList.remove('on'); }); this.classList.add('on'); };
+    strip.appendChild(pill);
+  }
+
+  // ---------- datos de ejemplo: mesas y reservas de hoy ----------
+  var mesas = [
+    { id:1, cap:2 }, { id:2, cap:2 }, { id:3, cap:2 },
+    { id:4, cap:4 }, { id:5, cap:4 }, { id:6, cap:4 }, { id:7, cap:4 },
+    { id:8, cap:6 }
+  ];
+  var DURACION_MIN = 90;
+  var reservas = [
+    { id:1, nombre:'Consuelo Vidal', tel:'+34 611 204 887', hora:'12:00', pax:2, zona:'Salón',   estado:'confirmada', mesa:1 },
+    { id:2, nombre:'Renzo Aguilar',  tel:'+34 622 883 015', hora:'13:00', pax:4, zona:'Salón',   estado:'pendiente',  mesa:null },
+    { id:3, nombre:'Familia Bazán',  tel:'+34 655 320 194', hora:'14:00', pax:6, zona:'Terraza', estado:'pendiente',  mesa:null },
+    { id:4, nombre:'Ana Ochante',    tel:'+34 699 411 762', hora:'19:00', pax:4, zona:'Salón',   estado:'confirmada', mesa:5, recordatorio:true },
+    { id:5, nombre:'Cumpleaños Rossi', tel:'+34 688 240 013', hora:'20:00', pax:6, zona:'Terraza', estado:'confirmada', mesa:8 },
+    { id:6, nombre:'Grupo Fernández', tel:'+34 633 970 552', hora:'20:00', pax:6, zona:'Terraza', estado:'pendiente',  mesa:null }
+  ];
+
+  var HORAS_AGENDA = [];
+  for (var hh = 11; hh <= 23; hh++){ HORAS_AGENDA.push(String(hh).padStart(2,'0') + ':00'); }
+
+  function mesasOcupadasA(horaNum){
+    var ocupadas = {};
+    reservas.forEach(function(r){
+      if (r.estado !== 'confirmada' || !r.mesa) return;
+      var inicio = horaANum(r.hora);
+      var fin = inicio + DURACION_MIN / 60;
+      if (horaNum >= inicio && horaNum < fin) ocupadas[r.mesa] = r;
+    });
+    return ocupadas;
+  }
+
+  function mesasDisponibles(paxNecesario, horaStr){
+    var ocupadas = mesasOcupadasA(horaANum(horaStr));
+    return mesas.filter(function(m){ return m.cap >= paxNecesario && !ocupadas[m.id]; });
+  }
+
+  function crearTarjetaReserva(r){
+    var card = document.createElement('div');
+    card.className = 'res-card';
+    card.dataset.id = r.id;
+
+    var chipHtml = r.estado === 'confirmada' ? '<span class="chip confirmed">Mesa ' + r.mesa + '</span>'
+      : r.estado === 'no-viene' ? '<span class="chip cancelled">No viene</span>'
+      : '<span class="chip pending">Por confirmar</span>';
+
+    var recordatorioHtml = (r.recordatorio && r.estado === 'confirmada') ? '<div class="reminder-tag">🔔 Recordatorio enviado (1h antes)</div>' : '';
+
+    var accionesHtml = '';
+    if (r.estado === 'confirmada'){
+      accionesHtml = '<div class="res-actions"><button class="res-btn ghost" onclick="marcarNoViene(' + r.id + ')">Avisó que no viene</button></div>';
+    } else if (r.estado === 'pendiente'){
+      accionesHtml = '<div class="res-actions"><button class="res-btn" onclick="abrirAsignacion(' + r.id + ')">Asignar mesa →</button></div><div class="assign-box" id="assign-' + r.id + '"></div>';
+    }
+
+    card.innerHTML =
+      '<div class="res-top"><b>' + r.nombre + '</b>' + chipHtml + '</div>' +
+      '<span class="res-meta">' + r.pax + ' personas · ' + r.zona + '</span>' +
+      recordatorioHtml + accionesHtml;
+    return card;
+  }
+
+  function pintarAgenda(){
+    var cont = document.getElementById('agendaBody');
+    cont.innerHTML = '';
+    HORAS_AGENDA.forEach(function(hora){
+      var itemsDeEstaHora = reservas.filter(function(r){ return r.hora === hora; });
+      var row = document.createElement('div'); row.className = 'agenda-row';
+      var horaEl = document.createElement('div'); horaEl.className = 'agenda-hour'; horaEl.textContent = hora;
+      var itemsEl = document.createElement('div'); itemsEl.className = 'agenda-items';
+      if (itemsDeEstaHora.length === 0){
+        itemsEl.innerHTML = '<div class="agenda-empty">Sin reservas a esta hora</div>';
+      } else {
+        itemsDeEstaHora.forEach(function(r){ itemsEl.appendChild(crearTarjetaReserva(r)); });
+      }
+      row.appendChild(horaEl); row.appendChild(itemsEl);
+      cont.appendChild(row);
+    });
+  }
+
+  function mensajeWa(nombre, tel, texto){
+    return '<p class="step-caption" style="margin:10px 0 8px; text-align:left; max-width:none;">Esto le llega por WhatsApp a <b>' + nombre + '</b>:</p>' +
+      '<div class="wa-mock" style="width:100%;"><div class="wa-head"><div class="wa-avatar">' + nombre[0] + '</div><div><b>' + nombre + '</b><span>' + tel + '</span></div></div>' +
+      '<div class="wa-chat"><div class="wa-bubble out">' + texto + '</div></div></div>';
+  }
+
+  function abrirAsignacion(id){
+    var r = reservas.find(function(x){ return x.id === id; });
+    var box = document.getElementById('assign-' + id);
+    var disponibles = mesasDisponibles(r.pax, r.hora);
+    var html = '<div class="lbl">Mesas libres a las ' + r.hora + ' para ' + r.pax + ' personas</div>';
+
+    if (disponibles.length === 0){
+      html += '<div class="no-mesa"><p>No hay mesa libre para ' + r.pax + ' personas a las ' + r.hora + '. Prueba a proponerle otra hora, o dile que le avisas en cuanto se libere sitio.</p>' +
+        '<div class="no-mesa-actions"><button type="button" onclick="proponerAlternativa(' + id + ')">Proponer por WhatsApp →</button></div></div>' +
+        '<div class="sent-note" id="sent-' + id + '"></div>';
+    } else {
+      html += '<div class="table-options" id="options-' + id + '">';
+      disponibles.forEach(function(m){
+        html += '<button type="button" class="table-option" onclick="elegirMesa(' + id + ',' + m.id + ',this)"><span>Mesa ' + m.id + '</span><span class="cap">' + m.cap + ' plazas</span></button>';
+      });
+      html += '</div><button class="confirm-btn" id="confirmBtn-' + id + '" disabled onclick="confirmarMesa(' + id + ')">Confirmar y avisar</button>' +
+        '<div class="sent-note" id="sent-' + id + '"></div>';
+    }
+
+    box.innerHTML = html;
+    box.classList.add('on');
+    var card = box.closest('.res-card');
+    var btn = card.querySelector('.res-btn');
+    if (btn) btn.style.display = 'none';
+  }
+
+  function elegirMesa(id, mesaId, btn){
+    document.querySelectorAll('#options-' + id + ' .table-option').forEach(function(b){ b.classList.remove('picked'); });
+    btn.classList.add('picked');
+    var confirmBtn = document.getElementById('confirmBtn-' + id);
+    confirmBtn.disabled = false;
+    confirmBtn.dataset.mesa = mesaId;
+  }
+
+  function confirmarMesa(id){
+    var confirmBtn = document.getElementById('confirmBtn-' + id);
+    var mesaId = parseInt(confirmBtn.dataset.mesa, 10);
+    var r = reservas.find(function(x){ return x.id === id; });
+    r.estado = 'confirmada'; r.mesa = mesaId;
+
+    var card = document.querySelector('.res-card[data-id="' + id + '"]');
+    var nuevo = crearTarjetaReserva(r);
+    card.replaceWith(nuevo);
+
+    var msg = '¡Hola ' + r.nombre.split(' ')[0] + '! Reserva confirmada ✅\n🕒 ' + r.hora + ' · ' + r.zona + ' · ' + r.pax + ' personas\nTe esperamos.';
+    var nota = document.createElement('div');
+    nota.className = 'sent-note on';
+    nota.innerHTML = mensajeWa(r.nombre, r.tel, msg);
+    nuevo.appendChild(nota);
+
+    actualizarStats();
+  }
+
+  function proponerAlternativa(id){
+    var r = reservas.find(function(x){ return x.id === id; });
+    var sent = document.getElementById('sent-' + id);
+    var msg = '¡Hola ' + r.nombre.split(' ')[0] + '! De momento no tenemos mesa libre para ' + r.pax + ' a las ' + r.hora + '. ¿Te viene bien otra hora, o prefieres que te avisemos en cuanto se libere sitio? 🙏';
+    sent.className = 'sent-note on';
+    sent.innerHTML = mensajeWa(r.nombre, r.tel, msg);
+  }
+
+  function marcarNoViene(id){
+    var r = reservas.find(function(x){ return x.id === id; });
+    r.estado = 'no-viene';
+    var card = document.querySelector('.res-card[data-id="' + id + '"]');
+    var nuevo = crearTarjetaReserva(r);
+    card.replaceWith(nuevo);
+    actualizarStats();
+  }
+
+  function actualizarStats(){
+    document.getElementById('statReservas').textContent = reservas.filter(function(r){ return r.estado !== 'no-viene'; }).length;
+    document.getElementById('statComensales').textContent = reservas.filter(function(r){ return r.estado !== 'no-viene'; }).reduce(function(s, r){ return s + r.pax; }, 0);
+    var ahoraNum = ahora.getHours() + ahora.getMinutes() / 60;
+    var ocupadasAhora = Object.keys(mesasOcupadasA(ahoraNum)).length;
+    document.getElementById('statLibres').textContent = mesas.length - ocupadasAhora;
+  }
+
+  pintarAgenda();
+  actualizarStats();
+</script>
